@@ -83,7 +83,7 @@ struct GameWidgetView: View {
 
     var body: some View {
         content
-            .widgetURL(URL(string: entry.state?.liveModeOn == true ? "leafslive://open" : "leafslive://golive"))
+            .widgetURL(URL(string: entry.state?.liveModeOn == true ? "puckpulse://open" : "puckpulse://golive"))
             .containerBackground(for: .widget) {
                 LinearGradient(colors: [Color(red: 0, green: 0.16, blue: 0.42), Color(red: 0, green: 0.07, blue: 0.2)],
                                startPoint: .topLeading, endPoint: .bottomTrailing)
@@ -98,7 +98,7 @@ struct GameWidgetView: View {
             default: rectangular(s)
             }
         } else {
-            Label("Hockey Live", systemImage: "hockey.puck.fill")
+            Label("Puck Pulse", systemImage: "hockey.puck.fill")
         }
     }
 
@@ -199,9 +199,9 @@ struct GameWidgetView: View {
 }
 
 @main
-struct LeafsWidget: Widget {
+struct PuckPulseWidget: Widget {
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: "LeafsGame", provider: GameProvider()) { entry in
+        StaticConfiguration(kind: "PuckPulseGame", provider: GameProvider()) { entry in
             GameWidgetView(entry: entry)
         }
         .configurationDisplayName("Next game")

@@ -3,7 +3,7 @@ import UserNotifications
 import WatchKit
 
 @main
-struct LeafsLiveApp: App {
+struct PuckPulseApp: App {
     @StateObject private var tracker = GameTracker()
 
     init() {

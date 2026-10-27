@@ -11,7 +11,7 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>leafslive</string>
+				<string>puckpulse</string>
 			</array>
 		</dict>
 	</array>
@@ -21,8 +21,8 @@
 		<string>physical-therapy</string>
 	</array>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Hockey Live runs a silent workout session during a game so it can keep tracking and tap your wrist when the screen is off. Nothing is read or saved.</string>
+	<string>Puck Pulse runs a silent workout session during a game so it can keep tracking and tap your wrist when the screen is off. Nothing is read or saved.</string>
 	<key>NSHealthUpdateUsageDescription</key>
-	<string>Hockey Live runs a silent workout session during a game so it can keep tracking and tap your wrist when the screen is off. No workout is saved.</string>
+	<string>Puck Pulse runs a silent workout session during a game so it can keep tracking and tap your wrist when the screen is off. No workout is saved.</string>
 </dict>
 </plist>

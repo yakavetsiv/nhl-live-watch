@@ -65,6 +65,7 @@ struct WidgetState: Codable, Equatable {
     var spoilerDelay: Int
     var updated: Date
 
+    // Bundle ids and the App Group keep the original "leafslive" name so updates install in place.
     static let appGroup = "group.com.yakavetsiv.leafslive"
     private static let key = "widgetState"
 

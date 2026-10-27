@@ -58,7 +58,7 @@ struct ScoreView: View {
             .padding(.horizontal, 2)
         }
         .containerBackground(Color.rink.gradient, for: .tabView)
-        .navigationTitle(slot?.team ?? "Hockey Live")
+        .navigationTitle(slot?.team ?? "Puck Pulse")
     }
 
     private func state(_ slot: GameSlot) -> (live: Bool, finished: Bool) {
@@ -235,7 +235,7 @@ struct EventsView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(event.title)
                             .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(event.kind == .leafsGoal ? Color.rinkBright : .primary)
+                            .foregroundStyle(event.kind == .teamGoal ? Color.rinkBright : .primary)
                         Text(event.detail).font(.system(size: 12)).foregroundStyle(.secondary)
                         Text(event.date, style: .relative).font(.system(size: 10)).foregroundStyle(.tertiary)
                     }

@@ -1,17 +1,18 @@
 import Foundation
 
 enum EventKind: String, CaseIterable, Identifiable, Codable {
-    case leafsGoal, opponentGoal, goalOverturned, powerPlay, leafsPenalty, period, final
+    // Raw values predate the rename and are kept so saved haptic settings still match.
+    case teamGoal = "leafsGoal", opponentGoal, goalOverturned, powerPlay, teamPenalty = "leafsPenalty", period, final
 
     var id: String { rawValue }
 
     var settingTitle: String {
         switch self {
-        case .leafsGoal: return "My team goal"
+        case .teamGoal: return "My team goal"
         case .opponentGoal: return "Opponent goal"
         case .goalOverturned: return "Goal overturned"
         case .powerPlay: return "My team power play"
-        case .leafsPenalty: return "My team penalty"
+        case .teamPenalty: return "My team penalty"
         case .period: return "Period start / end"
         case .final: return "Final result"
         }
@@ -21,22 +22,22 @@ enum EventKind: String, CaseIterable, Identifiable, Codable {
     var priority: Int {
         switch self {
         case .final: return 0
-        case .leafsGoal: return 1
+        case .teamGoal: return 1
         case .opponentGoal: return 2
         case .goalOverturned: return 3
         case .powerPlay: return 4
-        case .leafsPenalty: return 5
+        case .teamPenalty: return 5
         case .period: return 6
         }
     }
 
     var symbol: String {
         switch self {
-        case .leafsGoal: return "flag.checkered"
+        case .teamGoal: return "flag.checkered"
         case .opponentGoal: return "xmark.circle"
         case .goalOverturned: return "arrow.uturn.backward.circle"
         case .powerPlay: return "bolt.fill"
-        case .leafsPenalty: return "exclamationmark.triangle"
+        case .teamPenalty: return "exclamationmark.triangle"
         case .period: return "clock"
         case .final: return "trophy"
         }
@@ -115,7 +116,7 @@ struct EventDetector {
                 let detail = [scorer, assists.isEmpty ? nil : "from " + assists.joined(separator: ", "), when]
                     .compactMap { $0 }.joined(separator: " · ")
                 events.append(GameEvent(
-                    kind: ours ? .leafsGoal : .opponentGoal,
+                    kind: ours ? .teamGoal : .opponentGoal,
                     title: ours ? "\(us) GOAL! \(score)" : "\(pbp.opponent(of: us).abbrev) goal. \(score)",
                     detail: detail,
                     team: ours ? us : pbp.opponent(of: us).abbrev))
@@ -126,7 +127,7 @@ struct EventDetector {
                 let who = name(d?.committedByPlayerId) ?? name(d?.servedByPlayerId)
                 let detail = [who, infraction, minutes, when].compactMap { $0 }.joined(separator: " · ")
                 if ours {
-                    events.append(GameEvent(kind: .leafsPenalty, title: "\(us) penalty", detail: detail, team: us))
+                    events.append(GameEvent(kind: .teamPenalty, title: "\(us) penalty", detail: detail, team: us))
                 } else {
                     events.append(GameEvent(kind: .powerPlay, title: "\(us) power play", detail: detail,
                                             team: pbp.opponent(of: us).abbrev))

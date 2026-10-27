@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A10000000000000000000013 /* LeafsWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A10000000000000000000005 /* LeafsWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A10000000000000000000013 /* PuckPulseWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A10000000000000000000005 /* PuckPulseWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -16,7 +16,7 @@
 			containerPortal = A10000000000000000000001 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = A1000000000000000000000B;
-			remoteInfo = LeafsWidget;
+			remoteInfo = PuckPulseWidget;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -27,7 +27,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				A10000000000000000000013 /* LeafsWidget.appex in Embed Foundation Extensions */,
+				A10000000000000000000013 /* PuckPulseWidget.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -35,24 +35,24 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		A10000000000000000000004 /* LeafsLive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LeafsLive.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A10000000000000000000005 /* LeafsWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = LeafsWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000000000000000000004 /* PuckPulse.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PuckPulse.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000000000000000000005 /* PuckPulseWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PuckPulseWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A10000000000000000000006 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
-		A10000000000000000000020 /* LeafsLive-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "LeafsLive-Info.plist"; sourceTree = "<group>"; };
-		A10000000000000000000021 /* LeafsWidget-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "LeafsWidget-Info.plist"; sourceTree = "<group>"; };
-		A10000000000000000000022 /* LeafsLive.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LeafsLive.entitlements; sourceTree = "<group>"; };
-		A10000000000000000000023 /* LeafsWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LeafsWidget.entitlements; sourceTree = "<group>"; };
+		A10000000000000000000020 /* PuckPulse-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "PuckPulse-Info.plist"; sourceTree = "<group>"; };
+		A10000000000000000000021 /* PuckPulseWidget-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "PuckPulseWidget-Info.plist"; sourceTree = "<group>"; };
+		A10000000000000000000022 /* PuckPulse.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PuckPulse.entitlements; sourceTree = "<group>"; };
+		A10000000000000000000023 /* PuckPulseWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PuckPulseWidget.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		A10000000000000000000007 /* LeafsLive */ = {
+		A10000000000000000000007 /* PuckPulse */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = LeafsLive;
+			path = PuckPulse;
 			sourceTree = "<group>";
 		};
-		A10000000000000000000008 /* LeafsWidget */ = {
+		A10000000000000000000008 /* PuckPulseWidget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = LeafsWidget;
+			path = PuckPulseWidget;
 			sourceTree = "<group>";
 		};
 		A10000000000000000000009 /* Shared */ = {
@@ -83,8 +83,8 @@
 		A10000000000000000000002 = {
 			isa = PBXGroup;
 			children = (
-				A10000000000000000000007 /* LeafsLive */,
-				A10000000000000000000008 /* LeafsWidget */,
+				A10000000000000000000007 /* PuckPulse */,
+				A10000000000000000000008 /* PuckPulseWidget */,
 				A10000000000000000000009 /* Shared */,
 				A1000000000000000000001F /* Config */,
 				A10000000000000000000003 /* Products */,
@@ -94,8 +94,8 @@
 		A10000000000000000000003 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A10000000000000000000004 /* LeafsLive.app */,
-				A10000000000000000000005 /* LeafsWidget.appex */,
+				A10000000000000000000004 /* PuckPulse.app */,
+				A10000000000000000000005 /* PuckPulseWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -104,10 +104,10 @@
 			isa = PBXGroup;
 			children = (
 				A10000000000000000000006 /* Base.xcconfig */,
-				A10000000000000000000020 /* LeafsLive-Info.plist */,
-				A10000000000000000000021 /* LeafsWidget-Info.plist */,
-				A10000000000000000000022 /* LeafsLive.entitlements */,
-				A10000000000000000000023 /* LeafsWidget.entitlements */,
+				A10000000000000000000020 /* PuckPulse-Info.plist */,
+				A10000000000000000000021 /* PuckPulseWidget-Info.plist */,
+				A10000000000000000000022 /* PuckPulse.entitlements */,
+				A10000000000000000000023 /* PuckPulseWidget.entitlements */,
 			);
 			path = Config;
 			sourceTree = "<group>";
@@ -115,9 +115,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A1000000000000000000000A /* LeafsLive */ = {
+		A1000000000000000000000A /* PuckPulse */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A10000000000000000000017 /* Build configuration list for PBXNativeTarget "LeafsLive" */;
+			buildConfigurationList = A10000000000000000000017 /* Build configuration list for PBXNativeTarget "PuckPulse" */;
 			buildPhases = (
 				A1000000000000000000000C /* Sources */,
 				A1000000000000000000000D /* Frameworks */,
@@ -130,17 +130,17 @@
 				A10000000000000000000014 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				A10000000000000000000007 /* LeafsLive */,
+				A10000000000000000000007 /* PuckPulse */,
 				A10000000000000000000009 /* Shared */,
 			);
-			name = LeafsLive;
-			productName = LeafsLive;
-			productReference = A10000000000000000000004 /* LeafsLive.app */;
+			name = PuckPulse;
+			productName = PuckPulse;
+			productReference = A10000000000000000000004 /* PuckPulse.app */;
 			productType = "com.apple.product-type.application";
 		};
-		A1000000000000000000000B /* LeafsWidget */ = {
+		A1000000000000000000000B /* PuckPulseWidget */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A10000000000000000000018 /* Build configuration list for PBXNativeTarget "LeafsWidget" */;
+			buildConfigurationList = A10000000000000000000018 /* Build configuration list for PBXNativeTarget "PuckPulseWidget" */;
 			buildPhases = (
 				A10000000000000000000010 /* Sources */,
 				A10000000000000000000011 /* Frameworks */,
@@ -151,12 +151,12 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				A10000000000000000000008 /* LeafsWidget */,
+				A10000000000000000000008 /* PuckPulseWidget */,
 				A10000000000000000000009 /* Shared */,
 			);
-			name = LeafsWidget;
-			productName = LeafsWidget;
-			productReference = A10000000000000000000005 /* LeafsWidget.appex */;
+			name = PuckPulseWidget;
+			productName = PuckPulseWidget;
+			productReference = A10000000000000000000005 /* PuckPulseWidget.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
@@ -177,7 +177,7 @@
 					};
 				};
 			};
-			buildConfigurationList = A10000000000000000000016 /* Build configuration list for PBXProject "LeafsLive" */;
+			buildConfigurationList = A10000000000000000000016 /* Build configuration list for PBXProject "PuckPulse" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -191,8 +191,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A1000000000000000000000A /* LeafsLive */,
-				A1000000000000000000000B /* LeafsWidget */,
+				A1000000000000000000000A /* PuckPulse */,
+				A1000000000000000000000B /* PuckPulseWidget */,
 			);
 		};
 /* End PBXProject section */
@@ -234,7 +234,7 @@
 /* Begin PBXTargetDependency section */
 		A10000000000000000000014 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = A1000000000000000000000B /* LeafsWidget */;
+			target = A1000000000000000000000B /* PuckPulseWidget */;
 			targetProxy = A10000000000000000000015 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -284,10 +284,10 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ENABLE_PREVIEWS = YES;
-				CODE_SIGN_ENTITLEMENTS = Config/LeafsLive.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Config/PuckPulse.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Config/LeafsLive-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Hockey Live";
+				INFOPLIST_FILE = "Config/PuckPulse-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Puck Pulse";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -308,10 +308,10 @@
 				CURRENT_PROJECT_VERSION = 1;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ENABLE_PREVIEWS = YES;
-				CODE_SIGN_ENTITLEMENTS = Config/LeafsLive.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Config/PuckPulse.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Config/LeafsLive-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Hockey Live";
+				INFOPLIST_FILE = "Config/PuckPulse-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Puck Pulse";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -331,10 +331,10 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				CODE_SIGN_ENTITLEMENTS = Config/LeafsWidget.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Config/PuckPulseWidget.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Config/LeafsWidget-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Hockey Live";
+				INFOPLIST_FILE = "Config/PuckPulseWidget-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Puck Pulse";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -355,10 +355,10 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				CODE_SIGN_ENTITLEMENTS = Config/LeafsWidget.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Config/PuckPulseWidget.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "Config/LeafsWidget-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Hockey Live";
+				INFOPLIST_FILE = "Config/PuckPulseWidget-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Puck Pulse";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -376,7 +376,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A10000000000000000000016 /* Build configuration list for PBXProject "LeafsLive" */ = {
+		A10000000000000000000016 /* Build configuration list for PBXProject "PuckPulse" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A10000000000000000000019 /* Debug */,
@@ -385,7 +385,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A10000000000000000000017 /* Build configuration list for PBXNativeTarget "LeafsLive" */ = {
+		A10000000000000000000017 /* Build configuration list for PBXNativeTarget "PuckPulse" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A1000000000000000000001B /* Debug */,
@@ -394,7 +394,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A10000000000000000000018 /* Build configuration list for PBXNativeTarget "LeafsWidget" */ = {
+		A10000000000000000000018 /* Build configuration list for PBXNativeTarget "PuckPulseWidget" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A1000000000000000000001D /* Debug */,

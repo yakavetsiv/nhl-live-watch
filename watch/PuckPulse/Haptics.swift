@@ -11,7 +11,7 @@ enum Haptics {
 
     static func pattern(for event: GameEvent) -> [(WKHapticType, Double)] {
         switch event.kind {
-        case .leafsGoal:
+        case .teamGoal:
             // Three strong taps.
             return [(.notification, 0.35), (.notification, 0.35), (.notification, 0)]
         case .opponentGoal:
@@ -21,7 +21,7 @@ enum Haptics {
         case .powerPlay:
             // Four even taps.
             return [(.click, 0.3), (.click, 0.3), (.click, 0.3), (.click, 0)]
-        case .leafsPenalty:
+        case .teamPenalty:
             // Followed team short-handed: one quick double tap.
             return [(.directionDown, 0.18), (.directionDown, 0)]
         case .period:

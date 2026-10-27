@@ -1,4 +1,4 @@
-# Hockey Live (nhl-live-watch)
+# Puck Pulse (nhl-live-watch)
 
 Apple Watch app that follows your NHL teams live and taps your wrist on game events.
 On first launch you pick any number of teams; change them later in Settings → Teams.
@@ -9,11 +9,11 @@ Data comes from the public NHL web API (`api-web.nhle.com`), polled every 8 s du
 
 | Event | Pattern |
 |---|---|
-| Leafs goal | three strong taps |
+| Your team goal | three strong taps |
 | Opponent goal | one failure buzz |
 | Goal overturned | two retry taps |
-| Leafs power play | four even taps |
-| Leafs penalty (short-handed) | quick double tap |
+| Your team power play | four even taps |
+| Your team penalty (short-handed) | quick double tap |
 | Period start | one tap |
 | Period end, final | two taps, pause, one tap |
 
@@ -56,8 +56,12 @@ Put your team in `watch/Config/Secrets.xcconfig` (gitignored):
 Then build to the watch:
 
     cd watch
-    xcodebuild -project LeafsLive.xcodeproj -scheme LeafsLive \
+    xcodebuild -project PuckPulse.xcodeproj -scheme PuckPulse \
       -destination 'platform=watchOS,id=<watch udid>' -derivedDataPath build -allowProvisioningUpdates
-    xcrun devicectl device install app --device <watch udid> build/Build/Products/Debug-watchos/LeafsLive.app
+    xcrun devicectl device install app --device <watch udid> build/Build/Products/Debug-watchos/PuckPulse.app
 
 With a free Personal Team the signing expires after 7 days; rebuild and reinstall weekly.
+
+Bundle ids (`com.yakavetsiv.leafslive.watchkitapp`) and the App Group (`group.com.yakavetsiv.leafslive`)
+keep the app's original name so existing installs update in place. The icon is drawn by
+`scripts/make-icon.swift`.
