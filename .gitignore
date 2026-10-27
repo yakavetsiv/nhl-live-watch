@@ -1,0 +1,11 @@
+.DS_Store
+node_modules/
+*.log
+# Xcode
+xcuserdata/
+DerivedData/
+build/
+*.xcuserstate
+
+# Signing team (local only)
+watch/Config/Secrets.xcconfig

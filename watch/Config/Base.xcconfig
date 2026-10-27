@@ -1,0 +1,4 @@
+// Shared build settings. Put DEVELOPMENT_TEAM in Secrets.xcconfig (gitignored):
+//   DEVELOPMENT_TEAM = <your team id>
+
+#include? "Secrets.xcconfig"
