@@ -32,6 +32,13 @@ struct NHLClient {
             let nextWeek: ClubWeek = try await get("club-schedule/\(abbrev)/week/\(next)")
             games += nextWeek.games
         }
+        #if DEBUG
+        // Simulator screenshots: `-showLastGame YES` shows the most recent finished game.
+        if UserDefaults.standard.bool(forKey: "showLastGame"),
+           let last = games.filter(\.isFinished).max(by: { $0.startTimeUTC < $1.startTimeUTC }) {
+            return last
+        }
+        #endif
         if let live = games.first(where: \.isLive) { return live }
         if let upcoming = games.filter({ !$0.isFinished }).min(by: { $0.startTimeUTC < $1.startTimeUTC }) {
             return upcoming

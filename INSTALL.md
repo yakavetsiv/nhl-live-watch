@@ -6,7 +6,7 @@ own Apple Watch. A free Apple ID is enough.
 ## What you need
 
 - A Mac with **Xcode 27** or later.
-- An **Apple Watch on watchOS 11** or later, paired with an iPhone.
+- An **Apple Watch on watchOS 11** or later (Series 6 or later, SE 2nd generation or later, or any Ultra), paired with an iPhone.
 - An **Apple ID** signed in to Xcode (Xcode → Settings → Accounts). The free Personal Team works.
 
 ## 1. Get the code

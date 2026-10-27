@@ -14,7 +14,7 @@ struct ContentView: View {
                         ScoreView(slot: nil).tag(0)
                     }
                     ForEach(Array(tracker.slots.enumerated()), id: \.element.id) { index, slot in
-                        ScoreView(slot: slot).tag(index)
+                        ScoreView(slot: slot, isCurrent: tracker.page == index).tag(index)
                     }
                     EventsView().tag(GameTracker.eventsPage)
                     SettingsView().tag(GameTracker.settingsPage)
@@ -34,12 +34,14 @@ struct ContentView: View {
 
 struct ScoreView: View {
     let slot: GameSlot?
+    /// Only the page on screen takes the double-tap gesture.
+    var isCurrent = true
     @EnvironmentObject var tracker: GameTracker
     @EnvironmentObject var runner: BackgroundRunner
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 10) {
+            VStack(spacing: Layout.size(10)) {
                 if let slot {
                     statusPill(slot)
                     matchup(slot)
@@ -57,6 +59,10 @@ struct ScoreView: View {
             }
             .padding(.horizontal, 2)
         }
+        #if DEBUG
+        // Simulator screenshots: `-scrollToBottom YES` opens each game page scrolled to the end.
+        .defaultScrollAnchor(UserDefaults.standard.bool(forKey: "scrollToBottom") ? .bottom : .top)
+        #endif
         .containerBackground(Color.rink.gradient, for: .tabView)
         .navigationTitle(slot?.team ?? "Puck Pulse")
     }
@@ -75,27 +81,27 @@ struct ScoreView: View {
         Group {
             if live, let pbp = slot.live {
                 HStack(spacing: 6) {
-                    LiveDot(size: 7)
+                    LiveDot(size: Layout.size(7))
                     Text(pbp.statusLabel).monospacedDigit()
                 }
-                .font(.system(size: 15, weight: .semibold, design: .rounded))
+                .scaledFont(15, relativeTo: .headline, weight: .semibold, design: .rounded)
             } else if finished {
                 Text(slot.live?.statusLabel ?? "FINAL")
-                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .scaledFont(15, relativeTo: .headline, weight: .semibold, design: .rounded)
                     .foregroundStyle(.secondary)
             } else {
                 VStack(spacing: 1) {
                     Text(game.startTimeUTC, format: .dateTime.weekday(.abbreviated).hour().minute())
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
+                        .scaledFont(16, relativeTo: .headline, weight: .semibold, design: .rounded)
                     if game.startTimeUTC > Date() {
                         Text("in \(game.startTimeUTC, style: .relative)")
-                            .font(.system(size: 13))
+                            .scaledFont(13, relativeTo: .footnote)
                             .foregroundStyle(.secondary)
                     }
                 }
             }
         }
-        .padding(.horizontal, 10).padding(.vertical, 4)
+        .padding(.horizontal, Layout.size(10)).padding(.vertical, Layout.size(4))
         .background(Capsule().fill(.white.opacity(live ? 0.12 : 0.06)))
     }
 
@@ -112,29 +118,33 @@ struct ScoreView: View {
             teamColumn(game.awayTeam.abbrev, awayScore, sog: pbp?.awayTeam.sog,
                        followed: game.awayTeam.abbrev == slot.team, started: started)
             Text(started ? ":" : "@")
-                .font(.system(size: started ? 30 : 16, weight: .bold, design: .rounded))
+                .scaledFont(started ? 30 : 16, relativeTo: .title, weight: .bold, design: .rounded)
                 .foregroundStyle(.secondary)
-                .padding(.top, started ? 34 : 0)
+                .padding(.top, started ? Layout.size(34) : 0)
             teamColumn(game.homeTeam.abbrev, homeScore, sog: pbp?.homeTeam.sog,
                        followed: game.homeTeam.abbrev == slot.team, started: started)
         }
+        // The score row is sized to the screen; very large text sizes would push it off the page.
+        .dynamicTypeSize(...DynamicTypeSize.xLarge)
     }
 
     private func teamColumn(_ abbrev: String, _ score: Int?, sog: Int?, followed: Bool, started: Bool) -> some View {
         VStack(spacing: 3) {
-            TeamLogo(abbrev: abbrev, size: started ? 42 : 54)
+            TeamLogo(abbrev: abbrev, size: Layout.size(started ? 42 : 54))
                 .overlay(Circle().stroke(Color.rinkBright, lineWidth: followed ? 2.5 : 0).padding(-3))
             Text(abbrev)
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .scaledFont(13, relativeTo: .footnote, weight: .semibold, design: .rounded)
+                .lineLimit(1)
                 .foregroundStyle(followed ? .primary : .secondary)
             if started {
                 Text(score.map(String.init) ?? "–")
-                    .font(.system(size: 44, weight: .heavy, design: .rounded))
+                    .scaledFont(44, relativeTo: .largeTitle, weight: .heavy, design: .rounded)
                     .monospacedDigit()
                     .contentTransition(.numericText())
                     .lineLimit(1)
+                    .minimumScaleFactor(0.6)
                 if let sog {
-                    Text("\(sog) SOG").font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
+                    Text("\(sog) SOG").scaledFont(11, relativeTo: .caption2, weight: .medium).foregroundStyle(.secondary)
                 }
             }
         }
@@ -152,7 +162,7 @@ struct ScoreView: View {
                 if let strength {
                     let good = strength.hasPrefix("PP") || strength == "EMPTY NET"
                     Text(strength)
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .scaledFont(12, relativeTo: .caption, weight: .bold, design: .rounded)
                         .padding(.horizontal, 8).padding(.vertical, 3)
                         .background(Capsule().fill(good ? Color.green.opacity(0.35) : Color.orange.opacity(0.35)))
                 }
@@ -167,15 +177,15 @@ struct ScoreView: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(10)
-            .background(RoundedRectangle(cornerRadius: 14).fill(.white.opacity(0.08)))
+            .padding(Layout.size(10))
+            .background(RoundedRectangle(cornerRadius: Layout.size(14)).fill(.white.opacity(0.08)))
         }
     }
 
     private func infoRow(_ symbol: String, _ text: String, tint: Color) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 6) {
-            Image(systemName: symbol).font(.system(size: 11)).foregroundStyle(tint)
-            Text(text).font(.system(size: 13)).lineLimit(2)
+            Image(systemName: symbol).scaledFont(11, relativeTo: .caption2).foregroundStyle(tint)
+            Text(text).scaledFont(13, relativeTo: .footnote).lineLimit(3)
         }
     }
 
@@ -185,22 +195,24 @@ struct ScoreView: View {
             Button(role: .destructive) { tracker.stopLive() } label: {
                 HStack {
                     Image(systemName: "dot.radiowaves.left.and.right").symbolEffect(.variableColor.iterative)
-                    Text("Live taps on")
+                    Text("Live taps on").lineLimit(1).minimumScaleFactor(0.8)
                     Spacer()
                     Image(systemName: "stop.fill")
                 }
-                .font(.system(size: 15, weight: .semibold))
+                .scaledFont(15, relativeTo: .headline, weight: .semibold)
             }
             .tint(.green)
         } else if !game.isFinished {
             Button { Task { await tracker.goLive() } } label: {
                 Label("Go Live", systemImage: "applewatch.radiowaves.left.and.right")
-                    .font(.system(size: 16, weight: .semibold))
+                    .scaledFont(16, relativeTo: .headline, weight: .semibold)
                     .frame(maxWidth: .infinity)
             }
             .tint(.rinkBright)
+            // Double tap (Series 9 and later, Ultra 2 and later) starts Live mode without touching the screen.
+            .handGestureShortcut(.primaryAction, isEnabled: isCurrent)
             if let err = runner.lastError {
-                Text(err).font(.system(size: 10)).foregroundStyle(.orange).lineLimit(2)
+                Text(err).scaledFont(10, relativeTo: .caption2).foregroundStyle(.orange).lineLimit(2)
             }
         }
     }
@@ -215,9 +227,9 @@ struct EventsView: View {
         List {
             if tracker.events.isEmpty {
                 VStack(spacing: 8) {
-                    Image(systemName: "list.bullet.rectangle").font(.system(size: 28)).foregroundStyle(.secondary)
+                    Image(systemName: "list.bullet.rectangle").scaledFont(28, relativeTo: .title).foregroundStyle(.secondary)
                     Text("Goals, penalties and periods show up here during a game.")
-                        .font(.system(size: 13)).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                        .scaledFont(13, relativeTo: .footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity)
                 .listRowBackground(Color.clear)
@@ -225,19 +237,19 @@ struct EventsView: View {
             ForEach(tracker.events) { event in
                 HStack(alignment: .top, spacing: 8) {
                     if let team = event.team {
-                        TeamLogo(abbrev: team, size: 28)
+                        TeamLogo(abbrev: team, size: Layout.size(28))
                     } else {
                         Image(systemName: event.kind.symbol)
-                            .font(.system(size: 13, weight: .semibold))
-                            .frame(width: 28, height: 28)
+                            .scaledFont(13, relativeTo: .footnote, weight: .semibold)
+                            .frame(width: Layout.size(28), height: Layout.size(28))
                             .background(Circle().fill(.white.opacity(0.12)))
                     }
                     VStack(alignment: .leading, spacing: 2) {
                         Text(event.title)
-                            .font(.system(size: 14, weight: .semibold))
+                            .scaledFont(14, relativeTo: .subheadline, weight: .semibold)
                             .foregroundStyle(event.kind == .teamGoal ? Color.rinkBright : .primary)
-                        Text(event.detail).font(.system(size: 12)).foregroundStyle(.secondary)
-                        Text(event.date, style: .relative).font(.system(size: 10)).foregroundStyle(.tertiary)
+                        Text(event.detail).scaledFont(12, relativeTo: .caption).foregroundStyle(.secondary)
+                        Text(event.date, style: .relative).scaledFont(10, relativeTo: .caption2).foregroundStyle(.tertiary)
                     }
                 }
                 .padding(.vertical, 2)
@@ -258,8 +270,8 @@ struct SettingsView: View {
                 TeamPickerView(isOnboarding: false)
             } label: {
                 HStack(spacing: -6) {
-                    ForEach(tracker.teams.prefix(4)) { TeamLogo(abbrev: $0.abbrev, size: 26) }
-                    Text("Teams").font(.system(size: 15, weight: .semibold)).padding(.leading, 14)
+                    ForEach(tracker.teams.prefix(4)) { TeamLogo(abbrev: $0.abbrev, size: Layout.size(26)) }
+                    Text("Teams").scaledFont(15, relativeTo: .headline, weight: .semibold).padding(.leading, 14)
                 }
             }
             Section {
@@ -320,9 +332,9 @@ struct TeamPickerView: View {
         List {
             if isOnboarding {
                 VStack(spacing: 6) {
-                    Image(systemName: "hockey.puck.fill").font(.system(size: 30)).foregroundStyle(Color.rinkBright)
+                    Image(systemName: "hockey.puck.fill").scaledFont(30, relativeTo: .title).foregroundStyle(Color.rinkBright)
                     Text("Pick the teams to follow. Change them later in Settings.")
-                        .font(.system(size: 13)).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                        .scaledFont(13, relativeTo: .footnote).foregroundStyle(.secondary).multilineTextAlignment(.center)
                 }
                 .frame(maxWidth: .infinity)
                 .listRowBackground(Color.clear)
@@ -339,11 +351,11 @@ struct TeamPickerView: View {
                     let on = selected.contains(team.id)
                     Button { toggle(team) } label: {
                         HStack(spacing: 10) {
-                            TeamLogo(abbrev: team.abbrev, size: 30)
-                            Text(team.name).font(.system(size: 14, weight: on ? .semibold : .regular)).lineLimit(2)
+                            TeamLogo(abbrev: team.abbrev, size: Layout.size(30))
+                            Text(team.name).scaledFont(14, relativeTo: .subheadline, weight: on ? .semibold : .regular).lineLimit(2)
                             Spacer(minLength: 0)
                             Image(systemName: on ? "checkmark.circle.fill" : "circle")
-                                .font(.system(size: 18))
+                                .scaledFont(18, relativeTo: .title3)
                                 .foregroundStyle(on ? Color.rinkBright : .secondary)
                         }
                     }

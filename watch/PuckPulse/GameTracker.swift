@@ -40,7 +40,19 @@ final class GameSlot: Identifiable {
 
 @MainActor
 final class GameTracker: ObservableObject {
-    @Published private(set) var teams: [Team] = FollowedTeams.load()
+    @Published private(set) var teams: [Team] = GameTracker.initialTeams()
+
+    private static func initialTeams() -> [Team] {
+        #if DEBUG
+        // Simulator screenshots: launching with `-seedTeams TOR,EDM` skips the team picker.
+        if let seed = UserDefaults.standard.string(forKey: "seedTeams") {
+            let teams = seed.split(separator: ",").map { Team(league: .nhl, abbrev: String($0), name: String($0)) }
+            FollowedTeams.save(teams)
+            return teams
+        }
+        #endif
+        return FollowedTeams.load()
+    }
     /// One slot per followed game: live first, then upcoming by start time, then finished.
     @Published private(set) var slots: [GameSlot] = []
     @Published private(set) var events: [GameEvent] = []

@@ -56,7 +56,7 @@ watchOS has no continuous-vibration API, so all patterns are made of taps.
 
 ### Live mode with the screen off
 
-Tap **Go Live** before or during a game. watchOS normally suspends an app seconds after you
+Tap **Go Live** before or during a game, or double-tap your fingers on Series 9 and later or Ultra 2 and later. watchOS normally suspends an app seconds after you
 lower your wrist, so Live mode starts a workout session with no workout builder: it keeps the
 app running for the whole game and nothing is saved to Health. If Health access is declined, it
 falls back to an extended runtime session, which watchOS caps at about an hour. Live mode ends
@@ -87,7 +87,7 @@ complications are included; on tinted watch faces logos are replaced by team abb
 Step-by-step instructions, including watch setup, signing and troubleshooting, are in
 [INSTALL.md](INSTALL.md). The short version:
 
-Requirements: Xcode 27, an Apple Watch on watchOS 11 or later (or the simulator).
+Requirements: Xcode 27 and any Apple Watch that runs watchOS 11 or later: Series 6 or later, SE (2nd generation) or later, or any Ultra. The layout and widget adapt to every screen size from 40 mm to 49 mm and follow the watch's text size setting. The simulator works too.
 
 1. Fetch the team logos. They are NHL trademarks, so they are not in the repo; the script
    downloads the official SVGs and renders them into a gitignored asset catalog. Without them

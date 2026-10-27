@@ -9,6 +9,10 @@ enum Notifier {
     static let reminderLimit = 20
 
     static func requestPermission() async {
+        #if DEBUG
+        // Seeded simulator runs (`-seedTeams`) are for screenshots; the permission sheet would cover them.
+        if UserDefaults.standard.string(forKey: "seedTeams") != nil { return }
+        #endif
         _ = try? await UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound])
     }
 
