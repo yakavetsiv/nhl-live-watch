@@ -39,6 +39,16 @@ struct NHLClient {
         return games.max(by: { $0.startTimeUTC < $1.startTimeUTC })
     }
 
+    /// Games that have not started yet this season, soonest first.
+    func upcomingGames(limit: Int) async throws -> [ScheduledGame] {
+        let season: ClubWeek = try await get("club-schedule-season/\(Club.abbrev)/now")
+        return season.games
+            .filter { !$0.isLive && !$0.isFinished && $0.startTimeUTC > Date() }
+            .sorted { $0.startTimeUTC < $1.startTimeUTC }
+            .prefix(limit)
+            .map { $0 }
+    }
+
     func playByPlay(gameID: Int) async throws -> PlayByPlay {
         try await get("gamecenter/\(gameID)/play-by-play")
     }

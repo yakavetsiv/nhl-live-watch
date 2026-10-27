@@ -6,6 +6,15 @@
 	<true/>
 	<key>WKWatchOnly</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>leafslive</string>
+			</array>
+		</dict>
+	</array>
 	<key>WKBackgroundModes</key>
 	<array>
 		<string>workout-processing</string>

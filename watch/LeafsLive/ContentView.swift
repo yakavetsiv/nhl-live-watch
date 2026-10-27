@@ -6,10 +6,10 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            TabView {
-                ScoreView()
-                EventsView()
-                SettingsView()
+            TabView(selection: $tracker.page) {
+                ScoreView().tag(0)
+                EventsView().tag(1)
+                SettingsView().tag(2)
             }
             .tabViewStyle(.verticalPage)
         }
@@ -34,6 +34,10 @@ struct ScoreView: View {
                     header(game)
                     scoreboard(game)
                     liveButton(game)
+                    if tracker.spoilerDelay > 0 {
+                        Label("Delayed \(tracker.spoilerDelay) s", systemImage: "hourglass")
+                            .font(.system(size: 10)).foregroundStyle(.secondary)
+                    }
                 } else if let error = tracker.error {
                     Label(error, systemImage: "wifi.exclamationmark").foregroundStyle(.secondary)
                 } else {
@@ -54,20 +58,25 @@ struct ScoreView: View {
             if let pbp, GameState.isLive(pbp.gameState) {
                 HStack(spacing: 4) {
                     Circle().fill(.red).frame(width: 6, height: 6)
-                    Text(pbp.periodDescriptor?.label ?? "LIVE")
+                    Text("LIVE").foregroundStyle(.red)
+                    Text(pbp.periodDescriptor?.label ?? "")
                     if let clock = pbp.clock {
                         Text(clock.inIntermission ? "INT \(clock.timeRemaining)" : clock.timeRemaining)
                             .monospacedDigit()
                     }
                 }
                 .font(.headline)
-            } else if game.isFinished || pbp.map({ GameState.isFinished($0.gameState) }) == true {
+            } else if pbp.map({ GameState.isFinished($0.gameState) }) ?? (game.isFinished && tracker.spoilerDelay == 0) {
                 Text("FINAL").font(.headline)
             } else {
                 VStack(spacing: 0) {
                     Text(game.startTimeUTC, format: .dateTime.weekday(.abbreviated).month().day())
                     Text(game.startTimeUTC, format: .dateTime.hour().minute())
                         .font(.title3.bold())
+                    if game.startTimeUTC > Date() {
+                        Text("in \(game.startTimeUTC, style: .relative)")
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 .font(.caption)
             }
@@ -78,8 +87,12 @@ struct ScoreView: View {
         let pbp = tracker.live?.id == game.id ? tracker.live : nil
         let away = pbp?.awayTeam.abbrev ?? game.awayTeam.abbrev
         let home = pbp?.homeTeam.abbrev ?? game.homeTeam.abbrev
-        let awayScore = pbp?.awayTeam.score ?? game.awayTeam.score
-        let homeScore = pbp?.homeTeam.score ?? game.homeTeam.score
+        // With a spoiler delay, schedule scores are not delayed, so wait for the first delayed snapshot.
+        let useSchedule = tracker.spoilerDelay == 0
+        let started = pbp.map { GameState.isLive($0.gameState) || GameState.isFinished($0.gameState) }
+            ?? (game.isLive || game.isFinished)
+        let awayScore = started ? pbp?.awayTeam.score ?? (useSchedule ? game.awayTeam.score : nil) : nil
+        let homeScore = started ? pbp?.homeTeam.score ?? (useSchedule ? game.homeTeam.score : nil) : nil
         return VStack(spacing: 4) {
             HStack(alignment: .firstTextBaseline) {
                 teamColumn(away, awayScore, sog: pbp?.awayTeam.sog)
@@ -93,8 +106,12 @@ struct ScoreView: View {
                     .background(label.hasPrefix("PP") || label == "EMPTY NET" ? Color.green.opacity(0.5) : Color.orange.opacity(0.5),
                                 in: Capsule())
             }
-            if let last = tracker.events.first {
-                Text(last.title).font(.caption2).lineLimit(1).foregroundStyle(.secondary)
+            if let penalty = pbp?.activePenaltySummary {
+                Text(penalty).font(.caption2).lineLimit(2).multilineTextAlignment(.center)
+            }
+            if let goal = pbp?.lastGoalSummary {
+                Label(goal, systemImage: "flag.checkered")
+                    .font(.caption2).lineLimit(1).foregroundStyle(.secondary)
             }
         }
     }
@@ -179,6 +196,23 @@ struct SettingsView: View {
                         Label(kind.settingTitle, systemImage: kind.symbol)
                     }
                 }
+            }
+            Section {
+                Picker("Spoiler delay", selection: $tracker.spoilerDelay) {
+                    ForEach(GameTracker.delayOptions, id: \.self) { seconds in
+                        Text(seconds == 0 ? "Off" : seconds < 60 ? "\(seconds) s" : seconds % 60 == 0 ? "\(seconds / 60) min" : "\(seconds / 60) min \(seconds % 60) s")
+                            .tag(seconds)
+                    }
+                }
+            } footer: {
+                Text("Holds back score, events and taps so they don't get ahead of your stream.")
+            }
+            Section {
+                Button { Notifier.sendTestPrompt(for: tracker.game) } label: {
+                    Label("Test game-start alert", systemImage: "bell.badge")
+                }
+            } footer: {
+                Text("At each puck drop you get an alert with a Go Live button. This sends one in 5 s.")
             }
             if let updated = tracker.lastUpdate {
                 Text("Updated \(updated, format: .dateTime.hour().minute().second())")

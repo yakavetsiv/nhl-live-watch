@@ -51,6 +51,8 @@ struct GameEvent: Identifiable, Equatable {
     let date = Date()
     /// For .final: true when the Leafs won.
     var won: Bool = false
+    /// For .period: true at the end of a period, false at the start.
+    var periodEnd: Bool = false
 }
 
 /// Compares two play-by-play snapshots and turns what changed into events.
@@ -139,7 +141,8 @@ struct EventDetector {
                 events.append(GameEvent(
                     kind: .period,
                     title: "End of \(label)",
-                    detail: scoreLine()))
+                    detail: scoreLine(),
+                    periodEnd: true))
 
             default:
                 break

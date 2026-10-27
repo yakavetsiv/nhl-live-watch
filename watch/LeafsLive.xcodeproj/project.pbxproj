@@ -6,11 +6,42 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A10000000000000000000013 /* LeafsWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A10000000000000000000005 /* LeafsWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A10000000000000000000015 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A10000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1000000000000000000000B;
+			remoteInfo = LeafsWidget;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A1000000000000000000000F /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A10000000000000000000013 /* LeafsWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		A10000000000000000000004 /* LeafsLive.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LeafsLive.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000000000000000000005 /* LeafsWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = LeafsWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A10000000000000000000006 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 		A10000000000000000000020 /* LeafsLive-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "LeafsLive-Info.plist"; sourceTree = "<group>"; };
-		A10000000000000000000021 /* LeafsLive.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LeafsLive.entitlements; sourceTree = "<group>"; };
+		A10000000000000000000021 /* LeafsWidget-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "LeafsWidget-Info.plist"; sourceTree = "<group>"; };
+		A10000000000000000000022 /* LeafsLive.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LeafsLive.entitlements; sourceTree = "<group>"; };
+		A10000000000000000000023 /* LeafsWidget.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = LeafsWidget.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -19,10 +50,27 @@
 			path = LeafsLive;
 			sourceTree = "<group>";
 		};
+		A10000000000000000000008 /* LeafsWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = LeafsWidget;
+			sourceTree = "<group>";
+		};
+		A10000000000000000000009 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A1000000000000000000000D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000000000000000000011 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -36,6 +84,8 @@
 			isa = PBXGroup;
 			children = (
 				A10000000000000000000007 /* LeafsLive */,
+				A10000000000000000000008 /* LeafsWidget */,
+				A10000000000000000000009 /* Shared */,
 				A1000000000000000000001F /* Config */,
 				A10000000000000000000003 /* Products */,
 			);
@@ -45,6 +95,7 @@
 			isa = PBXGroup;
 			children = (
 				A10000000000000000000004 /* LeafsLive.app */,
+				A10000000000000000000005 /* LeafsWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -54,7 +105,9 @@
 			children = (
 				A10000000000000000000006 /* Base.xcconfig */,
 				A10000000000000000000020 /* LeafsLive-Info.plist */,
-				A10000000000000000000021 /* LeafsLive.entitlements */,
+				A10000000000000000000021 /* LeafsWidget-Info.plist */,
+				A10000000000000000000022 /* LeafsLive.entitlements */,
+				A10000000000000000000023 /* LeafsWidget.entitlements */,
 			);
 			path = Config;
 			sourceTree = "<group>";
@@ -69,18 +122,42 @@
 				A1000000000000000000000C /* Sources */,
 				A1000000000000000000000D /* Frameworks */,
 				A1000000000000000000000E /* Resources */,
+				A1000000000000000000000F /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A10000000000000000000014 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A10000000000000000000007 /* LeafsLive */,
+				A10000000000000000000009 /* Shared */,
+			);
+			name = LeafsLive;
+			productName = LeafsLive;
+			productReference = A10000000000000000000004 /* LeafsLive.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A1000000000000000000000B /* LeafsWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A10000000000000000000018 /* Build configuration list for PBXNativeTarget "LeafsWidget" */;
+			buildPhases = (
+				A10000000000000000000010 /* Sources */,
+				A10000000000000000000011 /* Frameworks */,
+				A10000000000000000000012 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				A10000000000000000000007 /* LeafsLive */,
+				A10000000000000000000008 /* LeafsWidget */,
+				A10000000000000000000009 /* Shared */,
 			);
-			name = LeafsLive;
-			productName = LeafsLive;
-			productReference = A10000000000000000000004 /* LeafsLive.app */;
-			productType = "com.apple.product-type.application";
+			name = LeafsWidget;
+			productName = LeafsWidget;
+			productReference = A10000000000000000000005 /* LeafsWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -93,6 +170,9 @@
 				LastUpgradeCheck = 2700;
 				TargetAttributes = {
 					A1000000000000000000000A = {
+						CreatedOnToolsVersion = 27.1;
+					};
+					A1000000000000000000000B = {
 						CreatedOnToolsVersion = 27.1;
 					};
 				};
@@ -112,12 +192,20 @@
 			projectRoot = "";
 			targets = (
 				A1000000000000000000000A /* LeafsLive */,
+				A1000000000000000000000B /* LeafsWidget */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		A1000000000000000000000E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000000000000000000012 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -134,7 +222,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A10000000000000000000010 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A10000000000000000000014 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1000000000000000000000B /* LeafsWidget */;
+			targetProxy = A10000000000000000000015 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		A10000000000000000000019 /* Debug */ = {
@@ -177,11 +280,11 @@
 		A1000000000000000000001B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Config/LeafsLive.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ENABLE_PREVIEWS = YES;
+				CODE_SIGN_ENTITLEMENTS = Config/LeafsLive.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Config/LeafsLive-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Leafs Live";
@@ -201,11 +304,11 @@
 		A1000000000000000000001C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Config/LeafsLive.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ENABLE_PREVIEWS = YES;
+				CODE_SIGN_ENTITLEMENTS = Config/LeafsLive.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Config/LeafsLive-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = "Leafs Live";
@@ -217,6 +320,54 @@
 				MARKETING_VERSION = 0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yakavetsiv.leafslive.watchkitapp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Release;
+		};
+		A1000000000000000000001D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				CODE_SIGN_ENTITLEMENTS = Config/LeafsWidget.entitlements;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/LeafsWidget-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Leafs Live";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yakavetsiv.leafslive.watchkitapp.LeafsWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Debug;
+		};
+		A1000000000000000000001E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				CODE_SIGN_ENTITLEMENTS = Config/LeafsWidget.entitlements;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/LeafsWidget-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Leafs Live";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 0.1;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yakavetsiv.leafslive.watchkitapp.LeafsWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				TARGETED_DEVICE_FAMILY = 4;
 			};
@@ -239,6 +390,15 @@
 			buildConfigurations = (
 				A1000000000000000000001B /* Debug */,
 				A1000000000000000000001C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A10000000000000000000018 /* Build configuration list for PBXNativeTarget "LeafsWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1000000000000000000001D /* Debug */,
+				A1000000000000000000001E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
