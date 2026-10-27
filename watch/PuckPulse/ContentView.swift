@@ -16,7 +16,12 @@ struct ContentView: View {
             pages
             #endif
         }
-        .onAppear { tracker.startPolling() }
+        .onAppear {
+            tracker.startPolling()
+            #if DEBUG
+            WidgetPreview.pushSampleIfAsked()
+            #endif
+        }
         .onChange(of: scenePhase) { _, phase in
             tracker.isActive = phase == .active
             if phase == .active { tracker.refreshNow() }

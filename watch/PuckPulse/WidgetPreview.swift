@@ -1,5 +1,6 @@
 #if DEBUG
 import SwiftUI
+import WidgetKit
 
 /// Simulator check for the Smart Stack card: launching with `-widgetPreview YES` shows the card
 /// at this watch's accessoryRectangular size for a few game states, clipped like the real widget.
@@ -31,6 +32,16 @@ struct WidgetPreview: View {
                     .overlay(Rectangle().stroke(.yellow.opacity(0.6), lineWidth: 0.5))
             }
         }
+    }
+
+    /// `-widgetSample N` hands sample N to the real widget so the Smart Stack shows it.
+    static func pushSampleIfAsked() {
+        let index = UserDefaults.standard.integer(forKey: "widgetSample")
+        guard index > 0, index <= samples.count else { return }
+        var state = samples[index - 1]
+        state.updated = Date()
+        state.save()
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private static let samples: [WidgetState] = {

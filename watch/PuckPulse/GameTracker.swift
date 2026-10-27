@@ -211,6 +211,10 @@ final class GameTracker: ObservableObject {
 
     /// Shares the most relevant game with the Smart Stack widget and reloads it when something changed.
     func syncWidget() {
+        #if DEBUG
+        // A pushed `-widgetSample` stays on the widget until the next normal launch.
+        if UserDefaults.standard.integer(forKey: "widgetSample") > 0 { return }
+        #endif
         let states = slots.map { $0.widgetState(liveModeOn: runner.isRunning, spoilerDelay: spoilerDelay) }
         guard let state = states.min(by: { $0.displayRank < $1.displayRank }) else { return }
         var previous = WidgetState.load()
