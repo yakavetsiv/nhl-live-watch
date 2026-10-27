@@ -2,7 +2,6 @@ import Foundation
 
 enum League: String, Codable, CaseIterable {
     case nhl = "NHL"
-    case ahl = "AHL"
 }
 
 struct Team: Codable, Hashable, Identifiable {

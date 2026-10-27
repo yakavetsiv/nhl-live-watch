@@ -349,13 +349,6 @@ struct TeamPickerView: View {
                     }
                 }
             }
-            Section {
-                EmptyView()
-            } header: {
-                Text("AHL")
-            } footer: {
-                Text("AHL teams are coming: the AHL score feed needs an access key.")
-            }
         }
         .navigationTitle(isOnboarding ? "Your teams" : "Teams")
         .toolbar {

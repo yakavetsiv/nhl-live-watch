@@ -2,7 +2,7 @@
 
 Apple Watch app that follows your NHL teams live and taps your wrist on game events.
 On first launch you pick any number of teams; change them later in Settings → Teams.
-Each followed game gets its own page. AHL support is planned (its score feed needs an access key).
+Each followed game gets its own page.
 Data comes from the public NHL web API (`api-web.nhle.com`), polled every 8 s during a game.
 
 ## Haptic patterns
