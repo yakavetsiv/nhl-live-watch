@@ -5,7 +5,8 @@ import WidgetKit
 /// Simulator check for the Smart Stack card: launching with `-widgetPreview YES` shows the card
 /// at this watch's accessoryRectangular size for a few game states, clipped like the real widget.
 struct WidgetPreview: View {
-    /// accessoryRectangular size by screen width, from Apple's watchOS widget size table.
+    /// accessoryRectangular size by screen width. These run a little small: on 40, 41 and 49 mm
+    /// simulators the real Smart Stack fits the largest layout, so a card that fits here fits there.
     private static let sizes: [CGFloat: CGSize] = [
         162: CGSize(width: 150, height: 47), // 40 mm
         176: CGSize(width: 157, height: 50), // 41 mm
