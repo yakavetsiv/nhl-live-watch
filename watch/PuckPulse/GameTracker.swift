@@ -30,6 +30,13 @@ final class GameSlot: Identifiable {
         !latestFinished && (isLiveNow || (game.startTimeUTC.timeIntervalSinceNow < 15 * 60 && !game.isFinished))
     }
 
+    /// Seconds between polls while on screen or in Live mode: 8 s while play can happen, slower in
+    /// intermission and before puck drop, when nothing changes for minutes.
+    var fastInterval: Double {
+        guard let latest, GameState.isLive(latest.gameState) else { return 15 }
+        return latest.clock?.inIntermission == true ? 30 : 8
+    }
+
     /// Over, and the spoiler delay has caught up with the final horn.
     var isDone: Bool { live.map { GameState.isFinished($0.gameState) } == true && buffer.isEmpty }
 
@@ -69,6 +76,9 @@ final class GameTracker: ObservableObject {
 
     private let client = NHLClient()
     private var loop: Task<Void, Never>?
+    /// Polls failed in a row, for backing off while offline.
+    private var failures = 0
+    private var lastWidgetReload = Date.distantPast
 
     /// Seconds to hold back score, events and haptics so they line up with a delayed stream.
     @AppStorage("spoilerDelay") var spoilerDelay = 0 {
@@ -184,9 +194,15 @@ final class GameTracker: ObservableObject {
             runner.stop()
             syncWidget()
         }
-        if failed { return min(15, secondsToNextRelease ?? 15) }
+        failures = failed ? failures + 1 : 0
+        if failed {
+            // 15, 30, 60, then every 2 min, so a watch with no connection isn't waking the radio.
+            let backoff = min(15 * pow(2, Double(failures - 1)), 120)
+            return min(backoff, secondsToNextRelease ?? backoff)
+        }
         if active {
-            let interval: Double = runner.isRunning || isActive ? 8 : 30
+            let fast = slots.filter(\.inWindow).map(\.fastInterval).min() ?? 30
+            let interval: Double = runner.isRunning || isActive ? fast : max(fast, 30)
             return min(interval, secondsToNextRelease ?? interval)
         }
         let soonest = slots.map { $0.game.startTimeUTC.timeIntervalSinceNow }.filter { $0 > 0 }.min() ?? 1800
@@ -220,7 +236,15 @@ final class GameTracker: ObservableObject {
         var previous = WidgetState.load()
         previous?.updated = state.updated
         state.save()
-        if previous != state { WidgetCenter.shared.reloadAllTimelines() }
+        guard previous != state else { return }
+        // The game clock changes on every poll. Reload for the clock alone at most once a minute;
+        // score, penalty, goal, period and Live mode changes reload at once.
+        var clockMoved = previous
+        clockMoved?.status = state.status
+        let samePeriod = previous?.status?.split(separator: " ").first == state.status?.split(separator: " ").first
+        if clockMoved == state, samePeriod, Date().timeIntervalSince(lastWidgetReload) < 60 { return }
+        lastWidgetReload = Date()
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private var secondsToNextRelease: Double? {

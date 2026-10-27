@@ -6,8 +6,10 @@ An Apple Watch app that follows your NHL teams live and taps your wrist when som
 goals, penalties, power plays, period breaks and the final horn. Each event has its own haptic
 pattern, so you know what happened without looking.
 
-Scores come from the public NHL web API (`api-web.nhle.com`), polled every 8 s during a game.
-No account, no server, no phone app: everything runs on the watch.
+Scores come from the public NHL web API (`api-web.nhle.com`), polled every 8 s during play, every
+30 s in intermission and every 15 s in the last minutes before puck drop. Polls ask only for changes,
+so a quiet stretch costs a few hundred bytes. No account, no server, no phone app: everything runs
+on the watch.
 
 <p align="center">
   <img src="docs/screenshots/live-score.png" width="205" alt="Live score">

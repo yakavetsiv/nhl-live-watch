@@ -10,6 +10,10 @@ struct NHLClient {
         return URLSession(configuration: config)
     }()
 
+    /// Last play-by-play per game with its ETag. An unchanged game then costs a 304 with no body
+    /// and no decoding, which is most polls: the feed only changes when something happens.
+    private let cache = PlayByPlayCache()
+
     private let decoder: JSONDecoder = {
         let d = JSONDecoder()
         d.dateDecodingStrategy = .iso8601
@@ -67,6 +71,26 @@ struct NHLClient {
     }
 
     func playByPlay(gameID: Int) async throws -> PlayByPlay {
-        try await get("gamecenter/\(gameID)/play-by-play")
+        var request = URLRequest(url: base.appendingPathComponent("gamecenter/\(gameID)/play-by-play"))
+        let cached = await cache.entry(for: gameID)
+        if let cached { request.setValue(cached.etag, forHTTPHeaderField: "If-None-Match") }
+        let (data, response) = try await session.data(for: request)
+        let http = response as? HTTPURLResponse
+        if http?.statusCode == 304, let cached { return cached.pbp }
+        if let http, !(200..<300).contains(http.statusCode) { throw URLError(.badServerResponse) }
+        let pbp = try decoder.decode(PlayByPlay.self, from: data)
+        if let etag = http?.value(forHTTPHeaderField: "ETag") { await cache.store(pbp, etag: etag, for: gameID) }
+        return pbp
+    }
+}
+
+private actor PlayByPlayCache {
+    private var entries: [Int: (etag: String, pbp: PlayByPlay)] = [:]
+
+    func entry(for gameID: Int) -> (etag: String, pbp: PlayByPlay)? { entries[gameID] }
+
+    func store(_ pbp: PlayByPlay, etag: String, for gameID: Int) {
+        if entries.count > 8 { entries.removeAll() }
+        entries[gameID] = (etag, pbp)
     }
 }
