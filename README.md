@@ -84,6 +84,9 @@ complications are included; on tinted watch faces logos are replaced by team abb
 
 ## Build
 
+Step-by-step instructions, including watch setup, signing and troubleshooting, are in
+[INSTALL.md](INSTALL.md). The short version:
+
 Requirements: Xcode 27, an Apple Watch on watchOS 11 or later (or the simulator).
 
 1. Fetch the team logos. They are NHL trademarks, so they are not in the repo; the script
