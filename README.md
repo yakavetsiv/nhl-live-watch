@@ -35,13 +35,19 @@ they line up with a delayed stream.
 
 ## Smart Stack widget
 
-Shows the next game with a countdown, or the live score with a red LIVE dot, the active
+Shows team logos (abbreviations on tinted watch faces), the next game with a countdown, or the live score with a red LIVE dot, the active
 penalty (PP/PK, time left, who is in the box) or the last scorer. From 15 minutes before puck
 drop it asks watchOS to raise it in the Smart Stack until Live mode is on; tapping it starts
 Live mode. The app shares state with the widget through the App Group
 `group.com.yakavetsiv.leafslive`.
 
 ## Build
+
+Team logos are NHL trademarks, so they are not in the repo. Fetch them once (needs network;
+converts the official SVGs into a gitignored asset catalog). Without them the app shows
+team abbreviations.
+
+    ./scripts/fetch-logos.sh
 
 Put your team in `watch/Config/Secrets.xcconfig` (gitignored):
 

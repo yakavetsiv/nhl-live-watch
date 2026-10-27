@@ -76,11 +76,18 @@ struct GameProvider: TimelineProvider {
 struct GameWidgetView: View {
     let entry: GameEntry
     @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetRenderingMode) private var renderingMode
+
+    /// Logos only where colours survive (Smart Stack); tinted faces get abbreviations.
+    private var showLogos: Bool { renderingMode == .fullColor }
 
     var body: some View {
         content
             .widgetURL(URL(string: entry.state?.liveModeOn == true ? "leafslive://open" : "leafslive://golive"))
-            .containerBackground(Color(red: 0, green: 32 / 255, blue: 91 / 255).gradient, for: .widget)
+            .containerBackground(for: .widget) {
+                LinearGradient(colors: [Color(red: 0, green: 0.16, blue: 0.42), Color(red: 0, green: 0.07, blue: 0.2)],
+                               startPoint: .topLeading, endPoint: .bottomTrailing)
+            }
     }
 
     @ViewBuilder private var content: some View {
@@ -95,72 +102,99 @@ struct GameWidgetView: View {
         }
     }
 
-    private var matchup: (WidgetState) -> String {
-        { "\($0.team) \($0.isHome ? "vs" : "@") \($0.opponent)" }
-    }
-
-    private func score(_ s: WidgetState) -> String {
-        "\(s.teamScore.map(String.init) ?? "–")–\(s.opponentScore.map(String.init) ?? "–")"
-    }
+    private func started(_ s: WidgetState) -> Bool { s.isLive || s.isFinished }
 
     private func inline(_ s: WidgetState) -> String {
-        if s.isLive || s.isFinished { return "\(s.team) \(score(s)) \(s.opponent) \(s.status ?? "")" }
-        return "\(matchup(s)) \(s.startTime.formatted(date: .omitted, time: .shortened))"
+        if started(s) {
+            return "\(s.team) \(s.teamScore.map(String.init) ?? "–")–\(s.opponentScore.map(String.init) ?? "–") \(s.opponent) \(s.status ?? "")"
+        }
+        return "\(s.team) \(s.isHome ? "vs" : "@") \(s.opponent) \(s.startTime.formatted(date: .omitted, time: .shortened))"
     }
 
     private func circular(_ s: WidgetState) -> some View {
         ZStack {
             AccessoryWidgetBackground()
-            VStack(spacing: 0) {
-                Image(systemName: "hockey.puck.fill").font(.system(size: 10))
-                if s.isLive || s.isFinished {
-                    Text(score(s)).font(.system(size: 15, weight: .bold, design: .rounded))
+            VStack(spacing: 1) {
+                TeamLogo(abbrev: s.opponent, size: 20, allowImage: showLogos)
+                if started(s) {
+                    Text("\(s.teamScore ?? 0)-\(s.opponentScore ?? 0)")
+                        .font(.system(size: 15, weight: .heavy, design: .rounded))
+                        .minimumScaleFactor(0.7)
                 } else {
                     Text(s.startTime, format: .dateTime.hour(.defaultDigits(amPM: .omitted)).minute())
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
                 }
             }
         }
     }
 
+    /// Smart Stack: logos and score, status line, then the active penalty, last goal or a Go Live prompt.
     private func rectangular(_ s: WidgetState) -> some View {
-        VStack(alignment: .leading, spacing: 1) {
-            HStack {
-                Text(matchup(s)).font(.headline)
-                Spacer()
-                if s.isLive || s.isFinished {
-                    Text(score(s)).font(.headline.monospacedDigit())
-                }
+        let wantsGoLive = !s.liveModeOn && !s.isFinished && (s.isLive || s.startTime.timeIntervalSinceNow < 15 * 60)
+        return VStack(alignment: .leading, spacing: 3) {
+            HStack(spacing: 6) {
+                side(s.team, score: s.teamScore, started: started(s), bold: true)
+                Spacer(minLength: 2)
+                Text(started(s) ? "–" : (s.isHome ? "vs" : "@"))
+                    .font(.system(size: 13, weight: .semibold)).foregroundStyle(.secondary)
+                Spacer(minLength: 2)
+                side(s.opponent, score: s.opponentScore, started: started(s), bold: false, trailing: true)
             }
-            if s.isLive || s.isFinished {
-                HStack(spacing: 3) {
-                    if s.isLive {
-                        Circle().fill(.red).frame(width: 5, height: 5)
-                        Text("LIVE").foregroundStyle(.red)
+            Group {
+                if s.isLive {
+                    HStack(spacing: 4) {
+                        LiveDot(size: 5)
+                        Text(s.status ?? "").monospacedDigit()
                     }
-                    Text(s.status ?? "").foregroundStyle(s.isLive ? .primary : .secondary)
-                }
-                .font(.caption2.bold())
-                if let penalty = s.penalty {
-                    Text(penalty).font(.caption2).lineLimit(1)
-                } else if let goal = s.lastGoal {
-                    Text(goal).font(.caption2).lineLimit(1).foregroundStyle(.secondary)
-                }
-            } else {
-                Text(s.startTime, format: .dateTime.weekday(.abbreviated).hour().minute())
-                    .font(.caption2)
-                if s.startTime > entry.date {
-                    Text("in \(s.startTime, style: .relative)")
-                        .font(.caption2).foregroundStyle(.secondary)
+                    .font(.system(size: 12, weight: .semibold))
+                } else if s.isFinished {
+                    Text(s.status ?? "FINAL").font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
+                } else {
+                    HStack(spacing: 4) {
+                        Text(s.startTime, format: .dateTime.weekday(.abbreviated).hour().minute())
+                            .font(.system(size: 12, weight: .semibold))
+                        if s.startTime > entry.date {
+                            Text("in \(s.startTime, style: .relative)")
+                                .font(.system(size: 12)).foregroundStyle(.secondary)
+                        }
+                    }
+                    .lineLimit(1)
                 }
             }
-            if !s.liveModeOn && !s.isFinished && (s.isLive || s.startTime.timeIntervalSinceNow < 15 * 60) {
+            if wantsGoLive {
                 Label("Tap to Go Live", systemImage: "applewatch.radiowaves.left.and.right")
-                    .font(.caption2).foregroundStyle(.tint)
+                    .font(.system(size: 12, weight: .semibold)).foregroundStyle(Color(red: 0.4, green: 0.65, blue: 1))
+            } else if let penalty = s.penalty {
+                Label(penalty, systemImage: "exclamationmark.triangle.fill")
+                    .font(.system(size: 11)).lineLimit(1).foregroundStyle(.orange)
+            } else if let goal = s.lastGoal {
+                Label(goal, systemImage: "light.beacon.max.fill")
+                    .font(.system(size: 11)).lineLimit(1).foregroundStyle(.secondary)
             } else if s.liveModeOn {
-                Label("Live taps on", systemImage: "checkmark.circle.fill").font(.caption2).foregroundStyle(.green)
+                Label("Live taps on", systemImage: "checkmark.circle.fill")
+                    .font(.system(size: 11)).foregroundStyle(.green)
             }
         }
+    }
+
+    /// Logo (or abbreviation on tinted faces) next to the score; the score sits toward the middle.
+    private func side(_ abbrev: String, score: Int?, started: Bool, bold: Bool, trailing: Bool = false) -> some View {
+        HStack(spacing: 6) {
+            if trailing, started { scoreText(score) }
+            if showLogos {
+                TeamLogo(abbrev: abbrev, size: 26)
+            } else {
+                Text(abbrev).font(.system(size: 14, weight: bold ? .heavy : .semibold, design: .rounded))
+            }
+            if !trailing, started { scoreText(score) }
+        }
+    }
+
+    private func scoreText(_ score: Int?) -> some View {
+        Text(score.map(String.init) ?? "–")
+            .font(.system(size: 22, weight: .heavy, design: .rounded))
+            .monospacedDigit()
+            .widgetAccentable()
     }
 }
 

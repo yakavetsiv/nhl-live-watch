@@ -53,6 +53,8 @@ struct GameEvent: Identifiable, Equatable {
     var won: Bool = false
     /// For .period: true at the end of a period, false at the start.
     var periodEnd: Bool = false
+    /// Team that scored or took the penalty, for its logo.
+    var team: String? = nil
 }
 
 /// Compares two play-by-play snapshots and turns what changed into events.
@@ -115,7 +117,8 @@ struct EventDetector {
                 events.append(GameEvent(
                     kind: ours ? .leafsGoal : .opponentGoal,
                     title: ours ? "\(us) GOAL! \(score)" : "\(pbp.opponent(of: us).abbrev) goal. \(score)",
-                    detail: detail))
+                    detail: detail,
+                    team: ours ? us : pbp.opponent(of: us).abbrev))
 
             case "penalty":
                 let infraction = (d?.descKey ?? "penalty").replacingOccurrences(of: "-", with: " ").capitalized
@@ -123,9 +126,10 @@ struct EventDetector {
                 let who = name(d?.committedByPlayerId) ?? name(d?.servedByPlayerId)
                 let detail = [who, infraction, minutes, when].compactMap { $0 }.joined(separator: " · ")
                 if ours {
-                    events.append(GameEvent(kind: .leafsPenalty, title: "\(us) penalty", detail: detail))
+                    events.append(GameEvent(kind: .leafsPenalty, title: "\(us) penalty", detail: detail, team: us))
                 } else {
-                    events.append(GameEvent(kind: .powerPlay, title: "\(us) power play", detail: detail))
+                    events.append(GameEvent(kind: .powerPlay, title: "\(us) power play", detail: detail,
+                                            team: pbp.opponent(of: us).abbrev))
                 }
 
             case "period-start":
