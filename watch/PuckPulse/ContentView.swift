@@ -6,26 +6,38 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            if tracker.teams.isEmpty {
-                TeamPickerView(isOnboarding: true)
+            #if DEBUG
+            if UserDefaults.standard.bool(forKey: "widgetPreview") {
+                WidgetPreview()
             } else {
-                TabView(selection: $tracker.page) {
-                    if tracker.slots.isEmpty {
-                        ScoreView(slot: nil).tag(0)
-                    }
-                    ForEach(Array(tracker.slots.enumerated()), id: \.element.id) { index, slot in
-                        ScoreView(slot: slot, isCurrent: tracker.page == index).tag(index)
-                    }
-                    EventsView().tag(GameTracker.eventsPage)
-                    SettingsView().tag(GameTracker.settingsPage)
-                }
-                .tabViewStyle(.verticalPage)
+                pages
             }
+            #else
+            pages
+            #endif
         }
         .onAppear { tracker.startPolling() }
         .onChange(of: scenePhase) { _, phase in
             tracker.isActive = phase == .active
             if phase == .active { tracker.refreshNow() }
+        }
+    }
+
+    @ViewBuilder private var pages: some View {
+        if tracker.teams.isEmpty {
+            TeamPickerView(isOnboarding: true)
+        } else {
+            TabView(selection: $tracker.page) {
+                if tracker.slots.isEmpty {
+                    ScoreView(slot: nil).tag(0)
+                }
+                ForEach(Array(tracker.slots.enumerated()), id: \.element.id) { index, slot in
+                    ScoreView(slot: slot, isCurrent: tracker.page == index).tag(index)
+                }
+                EventsView().tag(GameTracker.eventsPage)
+                SettingsView().tag(GameTracker.settingsPage)
+            }
+            .tabViewStyle(.verticalPage)
         }
     }
 }
