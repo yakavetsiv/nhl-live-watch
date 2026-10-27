@@ -1,6 +1,8 @@
-# Leafs Live
+# Hockey Live (nhl-live-watch)
 
-Apple Watch app that follows the Toronto Maple Leafs live and taps your wrist on game events.
+Apple Watch app that follows your NHL teams live and taps your wrist on game events.
+On first launch you pick any number of teams; change them later in Settings → Teams.
+Each followed game gets its own page. AHL support is planned (its score feed needs an access key).
 Data comes from the public NHL web API (`api-web.nhle.com`), polled every 8 s during a game.
 
 ## Haptic patterns
@@ -53,4 +55,3 @@ Then build to the watch:
     xcrun devicectl device install app --device <watch udid> build/Build/Products/Debug-watchos/LeafsLive.app
 
 With a free Personal Team the signing expires after 7 days; rebuild and reinstall weekly.
-To follow another team, change `Club.abbrev` in `NHLModels.swift`.

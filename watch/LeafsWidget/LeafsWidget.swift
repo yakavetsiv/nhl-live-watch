@@ -33,11 +33,15 @@ struct GameProvider: TimelineProvider {
         let shared = WidgetState.load()
         let fresh = shared.map { Date().timeIntervalSince($0.updated) < 5 * 60 && !$0.isFinished } ?? false
         if fresh || (shared?.spoilerDelay ?? 0) > 0 && shared?.isFinished == false { return shared }
-        guard let game = try? await client.currentOrNextGame() else { return shared }
-        let live = game.isLive ? try? await client.playByPlay(gameID: game.id) : nil
-        return WidgetState(game: game, live: live,
-                           liveModeOn: shared?.gameID == game.id && shared?.liveModeOn == true,
-                           spoilerDelay: shared?.spoilerDelay ?? 0)
+        var states: [WidgetState] = []
+        for team in FollowedTeams.nhlAbbrevs {
+            guard let game = try? await client.currentOrNextGame(team: team) else { continue }
+            let live = game.isLive ? try? await client.playByPlay(gameID: game.id) : nil
+            states.append(WidgetState(team: team, game: game, live: live,
+                                      liveModeOn: shared?.gameID == game.id && shared?.liveModeOn == true,
+                                      spoilerDelay: shared?.spoilerDelay ?? 0))
+        }
+        return states.min { $0.displayRank < $1.displayRank } ?? shared
     }
 
     private func timeline(for state: WidgetState?) -> Timeline<GameEntry> {
@@ -87,20 +91,20 @@ struct GameWidgetView: View {
             default: rectangular(s)
             }
         } else {
-            Label("Leafs Live", systemImage: "leaf.fill")
+            Label("Hockey Live", systemImage: "hockey.puck.fill")
         }
     }
 
     private var matchup: (WidgetState) -> String {
-        { "TOR \($0.leafsAreHome ? "vs" : "@") \($0.opponent)" }
+        { "\($0.team) \($0.isHome ? "vs" : "@") \($0.opponent)" }
     }
 
     private func score(_ s: WidgetState) -> String {
-        "\(s.leafsScore.map(String.init) ?? "–")–\(s.opponentScore.map(String.init) ?? "–")"
+        "\(s.teamScore.map(String.init) ?? "–")–\(s.opponentScore.map(String.init) ?? "–")"
     }
 
     private func inline(_ s: WidgetState) -> String {
-        if s.isLive || s.isFinished { return "TOR \(score(s)) \(s.opponent) \(s.status ?? "")" }
+        if s.isLive || s.isFinished { return "\(s.team) \(score(s)) \(s.opponent) \(s.status ?? "")" }
         return "\(matchup(s)) \(s.startTime.formatted(date: .omitted, time: .shortened))"
     }
 
@@ -108,7 +112,7 @@ struct GameWidgetView: View {
         ZStack {
             AccessoryWidgetBackground()
             VStack(spacing: 0) {
-                Image(systemName: "leaf.fill").font(.system(size: 10))
+                Image(systemName: "hockey.puck.fill").font(.system(size: 10))
                 if s.isLive || s.isFinished {
                     Text(score(s)).font(.system(size: 15, weight: .bold, design: .rounded))
                 } else {
@@ -166,7 +170,7 @@ struct LeafsWidget: Widget {
         StaticConfiguration(kind: "LeafsGame", provider: GameProvider()) { entry in
             GameWidgetView(entry: entry)
         }
-        .configurationDisplayName("Leafs game")
+        .configurationDisplayName("Next game")
         .description("Score, penalties and a Go Live shortcut.")
         .supportedFamilies([.accessoryRectangular, .accessoryCircular, .accessoryInline])
     }

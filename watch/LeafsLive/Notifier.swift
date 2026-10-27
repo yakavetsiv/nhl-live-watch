@@ -29,27 +29,27 @@ enum Notifier {
 
     /// Replaces the puck-drop prompts with one per upcoming game, so they fire even if the app
     /// has not been opened for days.
-    static func scheduleGameStartPrompts(for games: [ScheduledGame]) async {
+    static func scheduleGameStartPrompts(for games: [(game: ScheduledGame, team: String)]) async {
         let center = UNUserNotificationCenter.current()
         let old = await center.pendingNotificationRequests().map(\.identifier).filter { $0.hasPrefix(reminderPrefix) }
         center.removePendingNotificationRequests(withIdentifiers: old)
 
-        for game in games.prefix(reminderLimit) where game.startTimeUTC > Date() {
+        for (game, team) in games.prefix(reminderLimit) where game.startTimeUTC > Date() {
             let parts = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: game.startTimeUTC)
             let trigger = UNCalendarNotificationTrigger(dateMatching: parts, repeats: false)
             try? await center.add(UNNotificationRequest(
-                identifier: reminderPrefix + String(game.id), content: gameStartContent(game), trigger: trigger))
+                identifier: reminderPrefix + String(game.id), content: gameStartContent(game, team: team), trigger: trigger))
         }
     }
 
     /// Sends the puck-drop prompt in a few seconds, to try the Go Live button.
-    static func sendTestPrompt(for game: ScheduledGame?) {
+    static func sendTestPrompt(for game: ScheduledGame?, team: String?) {
         let content: UNMutableNotificationContent
-        if let game {
-            content = gameStartContent(game)
+        if let game, let team {
+            content = gameStartContent(game, team: team)
         } else {
             content = UNMutableNotificationContent()
-            content.title = "Leafs game starting"
+            content.title = "Game starting"
             content.body = "Tap Go Live for goal taps."
             content.categoryIdentifier = gameStartCategory
             content.sound = .default
@@ -58,9 +58,9 @@ enum Notifier {
         UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "test-prompt", content: content, trigger: trigger))
     }
 
-    private static func gameStartContent(_ game: ScheduledGame) -> UNMutableNotificationContent {
+    private static func gameStartContent(_ game: ScheduledGame, team: String) -> UNMutableNotificationContent {
         let content = UNMutableNotificationContent()
-        content.title = "Leafs \(game.leafsAreHome ? "vs" : "at") \(game.opponent.abbrev) is starting"
+        content.title = "\(team) \(game.isHome(team) ? "vs" : "at") \(game.opponent(of: team).abbrev) is starting"
         content.body = "Tap Go Live for goal and penalty taps."
         content.categoryIdentifier = gameStartCategory
         content.sound = .default

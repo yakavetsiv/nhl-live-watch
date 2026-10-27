@@ -41,6 +41,6 @@ struct LeafsLiveApp: App {
 }
 
 extension Color {
-    static let leafsBlue = Color(red: 0, green: 32 / 255, blue: 91 / 255)
-    static let leafsBright = Color(red: 0.18, green: 0.42, blue: 0.95)
+    static let rink = Color(red: 0, green: 32 / 255, blue: 91 / 255)
+    static let rinkBright = Color(red: 0.18, green: 0.42, blue: 0.95)
 }

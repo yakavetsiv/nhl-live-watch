@@ -1,12 +1,6 @@
 import Foundation
 
-/// The team the app follows. Change the abbreviation to follow another club.
-enum Club {
-    static let abbrev = "TOR"
-    static let id = 10
-}
-
-// MARK: - Schedule (api-web.nhle.com/v1/club-schedule/TOR/week/...)
+// MARK: - Schedule (api-web.nhle.com/v1/club-schedule/{team}/week/...)
 
 struct ClubWeek: Decodable {
     let nextStartDate: String?
@@ -22,8 +16,9 @@ struct ScheduledGame: Decodable, Identifiable, Equatable {
 
     var isLive: Bool { GameState.isLive(gameState) }
     var isFinished: Bool { GameState.isFinished(gameState) }
-    var opponent: TeamRef { homeTeam.abbrev == Club.abbrev ? awayTeam : homeTeam }
-    var leafsAreHome: Bool { homeTeam.abbrev == Club.abbrev }
+    func isHome(_ us: String) -> Bool { homeTeam.abbrev == us }
+    func team(_ us: String) -> TeamRef { isHome(us) ? homeTeam : awayTeam }
+    func opponent(of us: String) -> TeamRef { isHome(us) ? awayTeam : homeTeam }
 }
 
 struct TeamRef: Decodable, Equatable {
@@ -122,19 +117,20 @@ struct LocalizedName: Decodable {
 }
 
 extension PlayByPlay {
-    var leafsAreHome: Bool { homeTeam.abbrev == Club.abbrev }
-    var leafs: PBPTeam { leafsAreHome ? homeTeam : awayTeam }
-    var opponent: PBPTeam { leafsAreHome ? awayTeam : homeTeam }
+    func isHome(_ us: String) -> Bool { homeTeam.abbrev == us }
+    func team(_ us: String) -> PBPTeam { isHome(us) ? homeTeam : awayTeam }
+    func opponent(of us: String) -> PBPTeam { isHome(us) ? awayTeam : homeTeam }
 
-    /// Skater strength for the Leafs, e.g. "PP 5v4", "PK 4v5", "EN" or nil at even strength.
+    /// Skater strength for team `abbrev`, e.g. "PP 5v4", "PK 4v5", "EMPTY NET" or nil at even strength.
     /// situationCode digits: away goalie, away skaters, home skaters, home goalie.
-    var strengthLabel: String? {
+    func strengthLabel(for abbrev: String) -> String? {
         guard let code = situation?.situationCode, code.count == 4 else { return nil }
         let d = code.compactMap { Int(String($0)) }
         guard d.count == 4 else { return nil }
-        let (us, them) = leafsAreHome ? (d[2], d[1]) : (d[1], d[2])
-        let ourGoalie = leafsAreHome ? d[3] : d[0]
-        let theirGoalie = leafsAreHome ? d[0] : d[3]
+        let home = isHome(abbrev)
+        let (us, them) = home ? (d[2], d[1]) : (d[1], d[2])
+        let ourGoalie = home ? d[3] : d[0]
+        let theirGoalie = home ? d[0] : d[3]
         if theirGoalie == 0 { return "EMPTY NET" }
         if ourGoalie == 0 { return "GOALIE PULLED" }
         if us > them { return "PP \(us)v\(them)" }

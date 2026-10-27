@@ -7,11 +7,11 @@ enum EventKind: String, CaseIterable, Identifiable, Codable {
 
     var settingTitle: String {
         switch self {
-        case .leafsGoal: return "Leafs goal"
+        case .leafsGoal: return "My team goal"
         case .opponentGoal: return "Opponent goal"
         case .goalOverturned: return "Goal overturned"
-        case .powerPlay: return "Leafs power play"
-        case .leafsPenalty: return "Leafs penalty"
+        case .powerPlay: return "My team power play"
+        case .leafsPenalty: return "My team penalty"
         case .period: return "Period start / end"
         case .final: return "Final result"
         }
@@ -49,7 +49,7 @@ struct GameEvent: Identifiable, Equatable {
     let title: String
     let detail: String
     let date = Date()
-    /// For .final: true when the Leafs won.
+    /// For .final: true when the followed team won.
     var won: Bool = false
     /// For .period: true at the end of a period, false at the start.
     var periodEnd: Bool = false
@@ -68,7 +68,7 @@ struct EventDetector {
     }
 
     /// The first snapshot of a game only records a baseline, so opening the app mid-game stays quiet.
-    mutating func ingest(_ pbp: PlayByPlay) -> [GameEvent] {
+    mutating func ingest(_ pbp: PlayByPlay, us: String) -> [GameEvent] {
         defer { lastSnapshot = pbp }
         guard let previous = lastSnapshot, previous.id == pbp.id else {
             reset()
@@ -93,28 +93,28 @@ struct EventDetector {
         // Score as of each play, so "End of 1st" shows the score at that moment.
         var running = (away: previous.awayTeam.score ?? 0, home: previous.homeTeam.score ?? 0)
         func scoreLine() -> String {
-            let (us, them) = pbp.leafsAreHome ? (running.home, running.away) : (running.away, running.home)
-            return "\(pbp.leafs.abbrev) \(us)–\(them) \(pbp.opponent.abbrev)"
+            let (mine, theirs) = pbp.isHome(us) ? (running.home, running.away) : (running.away, running.home)
+            return "\(us) \(mine)–\(theirs) \(pbp.opponent(of: us).abbrev)"
         }
 
         for play in newPlays {
             seenEventIDs.insert(play.eventId)
             let d = play.details
-            let ours = d?.eventOwnerTeamId == pbp.leafs.id
+            let ours = d?.eventOwnerTeamId == pbp.team(us).id
             let when = [play.periodDescriptor?.label, play.timeInPeriod].compactMap { $0 }.joined(separator: " ")
 
             switch play.typeDescKey {
             case "goal":
                 running = (d?.awayScore ?? pbp.awayTeam.score ?? 0, d?.homeScore ?? pbp.homeTeam.score ?? 0)
                 let score = scoreLine()
-                var scorer = name(d?.scoringPlayerId) ?? (ours ? pbp.leafs.abbrev : pbp.opponent.abbrev)
+                var scorer = name(d?.scoringPlayerId) ?? (ours ? pbp.team(us).abbrev : pbp.opponent(of: us).abbrev)
                 if let total = d?.scoringPlayerTotal { scorer += " (\(total))" }
                 let assists = [name(d?.assist1PlayerId), name(d?.assist2PlayerId)].compactMap { $0 }
                 let detail = [scorer, assists.isEmpty ? nil : "from " + assists.joined(separator: ", "), when]
                     .compactMap { $0 }.joined(separator: " · ")
                 events.append(GameEvent(
                     kind: ours ? .leafsGoal : .opponentGoal,
-                    title: ours ? "LEAFS GOAL! \(score)" : "\(pbp.opponent.abbrev) goal. \(score)",
+                    title: ours ? "\(us) GOAL! \(score)" : "\(pbp.opponent(of: us).abbrev) goal. \(score)",
                     detail: detail))
 
             case "penalty":
@@ -123,9 +123,9 @@ struct EventDetector {
                 let who = name(d?.committedByPlayerId) ?? name(d?.servedByPlayerId)
                 let detail = [who, infraction, minutes, when].compactMap { $0 }.joined(separator: " · ")
                 if ours {
-                    events.append(GameEvent(kind: .leafsPenalty, title: "Leafs penalty", detail: detail))
+                    events.append(GameEvent(kind: .leafsPenalty, title: "\(us) penalty", detail: detail))
                 } else {
-                    events.append(GameEvent(kind: .powerPlay, title: "Leafs power play", detail: detail))
+                    events.append(GameEvent(kind: .powerPlay, title: "\(us) power play", detail: detail))
                 }
 
             case "period-start":
@@ -134,7 +134,7 @@ struct EventDetector {
                 events.append(GameEvent(
                     kind: .period,
                     title: isOpening ? "Puck drop" : "\(label) underway",
-                    detail: "\(pbp.leafs.abbrev) vs \(pbp.opponent.abbrev)"))
+                    detail: "\(pbp.team(us).abbrev) vs \(pbp.opponent(of: us).abbrev)"))
 
             case "period-end":
                 let label = play.periodDescriptor?.label ?? "period"
@@ -156,18 +156,18 @@ struct EventDetector {
             events.append(GameEvent(
                 kind: .goalOverturned,
                 title: "Goal overturned",
-                detail: "\(pbp.leafs.abbrev) \(pbp.leafs.score ?? 0)–\(pbp.opponent.score ?? 0) \(pbp.opponent.abbrev)"))
+                detail: "\(pbp.team(us).abbrev) \(pbp.team(us).score ?? 0)–\(pbp.opponent(of: us).score ?? 0) \(pbp.opponent(of: us).abbrev)"))
         }
 
         if !announcedFinal, GameState.isFinished(pbp.gameState) || pbp.plays.contains(where: { $0.typeDescKey == "game-end" }) {
             announcedFinal = true
-            let us = pbp.leafs.score ?? 0, them = pbp.opponent.score ?? 0
+            let mine = pbp.team(us).score ?? 0, theirs = pbp.opponent(of: us).score ?? 0
             let suffix = pbp.periodDescriptor.map { $0.periodType == "REG" ? "" : " (\($0.periodType))" } ?? ""
             events.append(GameEvent(
                 kind: .final,
-                title: us > them ? "LEAFS WIN!" : "Leafs lose",
-                detail: "Final\(suffix): \(pbp.leafs.abbrev) \(us)–\(them) \(pbp.opponent.abbrev)",
-                won: us > them))
+                title: mine > theirs ? "\(us) WIN!" : "\(us) lose",
+                detail: "Final\(suffix): \(us) \(mine)–\(theirs) \(pbp.opponent(of: us).abbrev)",
+                won: mine > theirs))
         }
         return events
     }

@@ -24,12 +24,12 @@ struct NHLClient {
         return try decoder.decode(T.self, from: data)
     }
 
-    /// The live game if there is one, otherwise the next upcoming game, otherwise the most recent one.
-    func currentOrNextGame() async throws -> ScheduledGame? {
-        let week: ClubWeek = try await get("club-schedule/\(Club.abbrev)/week/now")
+    /// The live game for team `abbrev` if there is one, otherwise its next game, otherwise its most recent one.
+    func currentOrNextGame(team abbrev: String) async throws -> ScheduledGame? {
+        let week: ClubWeek = try await get("club-schedule/\(abbrev)/week/now")
         var games = week.games
         if !games.contains(where: { !$0.isFinished }), let next = week.nextStartDate {
-            let nextWeek: ClubWeek = try await get("club-schedule/\(Club.abbrev)/week/\(next)")
+            let nextWeek: ClubWeek = try await get("club-schedule/\(abbrev)/week/\(next)")
             games += nextWeek.games
         }
         if let live = games.first(where: \.isLive) { return live }
@@ -39,14 +39,24 @@ struct NHLClient {
         return games.max(by: { $0.startTimeUTC < $1.startTimeUTC })
     }
 
-    /// Games that have not started yet this season, soonest first.
-    func upcomingGames(limit: Int) async throws -> [ScheduledGame] {
-        let season: ClubWeek = try await get("club-schedule-season/\(Club.abbrev)/now")
+    /// Games of team `abbrev` that have not started yet this season, soonest first.
+    func upcomingGames(team abbrev: String) async throws -> [ScheduledGame] {
+        let season: ClubWeek = try await get("club-schedule-season/\(abbrev)/now")
         return season.games
             .filter { !$0.isLive && !$0.isFinished && $0.startTimeUTC > Date() }
             .sorted { $0.startTimeUTC < $1.startTimeUTC }
-            .prefix(limit)
-            .map { $0 }
+    }
+
+    /// All NHL teams, sorted by name.
+    func teams() async throws -> [Team] {
+        struct Standings: Decodable {
+            struct Row: Decodable { let teamAbbrev: LocalizedName; let teamName: LocalizedName }
+            let standings: [Row]
+        }
+        let s: Standings = try await get("standings/now")
+        return s.standings
+            .map { Team(league: .nhl, abbrev: $0.teamAbbrev.default, name: $0.teamName.default) }
+            .sorted { $0.name < $1.name }
     }
 
     func playByPlay(gameID: Int) async throws -> PlayByPlay {

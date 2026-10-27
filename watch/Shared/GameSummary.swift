@@ -18,9 +18,9 @@ extension PlayByPlay {
         return "\(team) \(scorer) · \(when)"
     }
 
-    /// "PP 5v4 1:23 · Backlund slashing" while teams are not at even strength.
-    var activePenaltySummary: String? {
-        guard GameState.isLive(gameState), let strength = strengthLabel,
+    /// "PP 5v4 1:23 · Backlund slashing" while teams are not at even strength, from `abbrev`'s side.
+    func activePenaltySummary(for abbrev: String) -> String? {
+        guard GameState.isLive(gameState), let strength = strengthLabel(for: abbrev),
               strength.hasPrefix("PP") || strength.hasPrefix("PK") || strength.contains("v") else { return nil }
         var parts = [strength]
         if let left = situation?.timeRemaining { parts[0] += " \(left.hasPrefix("0") ? String(left.dropFirst()) : left)" }
@@ -49,10 +49,12 @@ extension PlayByPlay {
 /// What the app hands the widget through the shared App Group.
 struct WidgetState: Codable, Equatable {
     var gameID: Int
+    /// The followed team whose side the widget shows.
+    var team: String
     var opponent: String
-    var leafsAreHome: Bool
+    var isHome: Bool
     var startTime: Date
-    var leafsScore: Int?
+    var teamScore: Int?
     var opponentScore: Int?
     var status: String?
     var isLive: Bool
@@ -76,23 +78,29 @@ struct WidgetState: Codable, Equatable {
         UserDefaults(suiteName: Self.appGroup)?.set(data, forKey: Self.key)
     }
 
-    init(game: ScheduledGame, live: PlayByPlay?, liveModeOn: Bool, spoilerDelay: Int) {
+    init(team us: String, game: ScheduledGame, live: PlayByPlay?, liveModeOn: Bool, spoilerDelay: Int) {
         let pbp = live?.id == game.id ? live : nil
         gameID = game.id
-        opponent = game.opponent.abbrev
-        leafsAreHome = game.leafsAreHome
+        team = us
+        opponent = game.opponent(of: us).abbrev
+        isHome = game.isHome(us)
         startTime = game.startTimeUTC
         // With a spoiler delay only the delayed snapshot may show a score.
         let scheduleOK = spoilerDelay == 0
-        leafsScore = pbp?.leafs.score ?? (scheduleOK ? (game.leafsAreHome ? game.homeTeam.score : game.awayTeam.score) : nil)
-        opponentScore = pbp?.opponent.score ?? (scheduleOK ? game.opponent.score : nil)
+        teamScore = pbp?.team(us).score ?? (scheduleOK ? game.team(us).score : nil)
+        opponentScore = pbp?.opponent(of: us).score ?? (scheduleOK ? game.opponent(of: us).score : nil)
         isLive = pbp.map { GameState.isLive($0.gameState) } ?? (scheduleOK && game.isLive)
         isFinished = pbp.map { GameState.isFinished($0.gameState) } ?? (scheduleOK && game.isFinished)
         status = pbp?.statusLabel
         lastGoal = pbp?.lastGoalSummary
-        penalty = pbp?.activePenaltySummary
+        penalty = pbp?.activePenaltySummary(for: us)
         self.liveModeOn = liveModeOn
         self.spoilerDelay = spoilerDelay
         updated = Date()
+    }
+
+    /// Lower sorts first: live games, then upcoming by start time, then finished ones.
+    var displayRank: (Int, Date) {
+        (isLive ? 0 : isFinished ? 2 : 1, startTime)
     }
 }

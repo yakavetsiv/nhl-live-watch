@@ -287,7 +287,7 @@
 				CODE_SIGN_ENTITLEMENTS = Config/LeafsLive.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Config/LeafsLive-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Leafs Live";
+				INFOPLIST_KEY_CFBundleDisplayName = "Hockey Live";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -311,7 +311,7 @@
 				CODE_SIGN_ENTITLEMENTS = Config/LeafsLive.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Config/LeafsLive-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Leafs Live";
+				INFOPLIST_KEY_CFBundleDisplayName = "Hockey Live";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -334,7 +334,7 @@
 				CODE_SIGN_ENTITLEMENTS = Config/LeafsWidget.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Config/LeafsWidget-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Leafs Live";
+				INFOPLIST_KEY_CFBundleDisplayName = "Hockey Live";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -358,7 +358,7 @@
 				CODE_SIGN_ENTITLEMENTS = Config/LeafsWidget.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Config/LeafsWidget-Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Leafs Live";
+				INFOPLIST_KEY_CFBundleDisplayName = "Hockey Live";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

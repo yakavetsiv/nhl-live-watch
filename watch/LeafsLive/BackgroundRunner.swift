@@ -87,7 +87,7 @@ extension BackgroundRunner: WKExtendedRuntimeSessionDelegate {
 
     nonisolated func extendedRuntimeSessionWillExpire(_ session: WKExtendedRuntimeSession) {
         Task { @MainActor in
-            Notifier.post(title: "Leafs Live paused", body: "Background time ran out. Open the app to keep tracking.")
+            Notifier.post(title: "Hockey Live paused", body: "Background time ran out. Open the app to keep tracking.")
         }
     }
 

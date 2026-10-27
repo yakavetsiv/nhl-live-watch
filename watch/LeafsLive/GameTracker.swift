@@ -1,27 +1,62 @@
 import SwiftUI
 import WidgetKit
 
+/// One game being followed, seen from the side of `team`.
+@MainActor
+final class GameSlot: Identifiable {
+    let team: String
+    var game: ScheduledGame
+    /// Snapshot on screen. Lags `latest` by the spoiler delay.
+    var live: PlayByPlay?
+    /// Newest snapshot from the API.
+    var latest: PlayByPlay?
+    /// Fetched snapshots waiting out the spoiler delay, oldest first.
+    var buffer: [(fetched: Date, pbp: PlayByPlay)] = []
+    var detector = EventDetector()
+
+    var id: Int { game.id }
+
+    init(team: String, game: ScheduledGame) {
+        self.team = team
+        self.game = game
+    }
+
+    private var latestFinished: Bool { latest.map { GameState.isFinished($0.gameState) } ?? false }
+
+    var isLiveNow: Bool { game.isLive || latest.map { GameState.isLive($0.gameState) } == true }
+
+    /// Live, or close enough to puck drop to poll every few seconds.
+    var inWindow: Bool {
+        !latestFinished && (isLiveNow || (game.startTimeUTC.timeIntervalSinceNow < 15 * 60 && !game.isFinished))
+    }
+
+    /// Over, and the spoiler delay has caught up with the final horn.
+    var isDone: Bool { live.map { GameState.isFinished($0.gameState) } == true && buffer.isEmpty }
+
+    func widgetState(liveModeOn: Bool, spoilerDelay: Int) -> WidgetState {
+        WidgetState(team: team, game: game, live: live, liveModeOn: liveModeOn, spoilerDelay: spoilerDelay)
+    }
+}
+
 @MainActor
 final class GameTracker: ObservableObject {
-    @Published private(set) var game: ScheduledGame?
-    @Published private(set) var live: PlayByPlay?
+    @Published private(set) var teams: [Team] = FollowedTeams.load()
+    /// One slot per followed game: live first, then upcoming by start time, then finished.
+    @Published private(set) var slots: [GameSlot] = []
     @Published private(set) var events: [GameEvent] = []
     @Published private(set) var lastUpdate: Date?
     @Published private(set) var error: String?
-    /// Vertical page shown: 0 score, 1 events, 2 settings.
+    /// Vertical page shown: game pages are 0..<slots.count, then the events and settings pages.
     @Published var page = 0
+    static let eventsPage = 100
+    static let settingsPage = 101
 
     let runner = BackgroundRunner()
     /// Set by the view from scenePhase. Notifications are only posted while the app is not on screen.
     var isActive = true
 
     private let client = NHLClient()
-    private var detector = EventDetector()
     private var loop: Task<Void, Never>?
-    /// Newest snapshot from the API. `live` lags it by the spoiler delay.
-    private var latest: PlayByPlay?
-    /// Fetched snapshots waiting out the spoiler delay, oldest first.
-    private var buffer: [(fetched: Date, pbp: PlayByPlay)] = []
 
     /// Seconds to hold back score, events and haptics so they line up with a delayed stream.
     @AppStorage("spoilerDelay") var spoilerDelay = 0 {
@@ -39,6 +74,15 @@ final class GameTracker: ObservableObject {
         if on { set.remove(kind.rawValue) } else { set.insert(kind.rawValue) }
         disabledKindsRaw = set.sorted().joined(separator: ",")
         objectWillChange.send()
+    }
+
+    func setTeams(_ new: [Team]) {
+        FollowedTeams.save(new)
+        teams = new
+        slots = []
+        page = 0
+        refreshNow()
+        Task { await refreshGamePrompts() }
     }
 
     func startPolling() {
@@ -65,78 +109,98 @@ final class GameTracker: ObservableObject {
         refreshNow()
     }
 
-    /// Schedules the Go Live prompt for each upcoming game. Runs on launch and from background refresh.
-    func refreshGamePrompts() async {
-        guard let games = try? await client.upcomingGames(limit: Notifier.reminderLimit) else { return }
-        await Notifier.scheduleGameStartPrompts(for: games)
-    }
-
     func stopLive() {
         runner.stop()
         syncWidget()
     }
 
+    /// Schedules the Go Live prompt for the next games of all followed teams. Runs on launch and from
+    /// background refresh.
+    func refreshGamePrompts() async {
+        var seen = Set<Int>()
+        var all: [(game: ScheduledGame, team: String)] = []
+        for team in FollowedTeams.nhlAbbrevs {
+            guard let games = try? await client.upcomingGames(team: team) else { continue }
+            for game in games where seen.insert(game.id).inserted { all.append((game, team)) }
+        }
+        all.sort { $0.game.startTimeUTC < $1.game.startTimeUTC }
+        await Notifier.scheduleGameStartPrompts(for: Array(all.prefix(Notifier.reminderLimit)))
+    }
+
     /// One poll. Returns seconds until the next one.
     private func tick() async -> Double {
-        do {
-            if game == nil || !(game!.isLive) || latest.map({ GameState.isFinished($0.gameState) }) == true {
-                let found = try await client.currentOrNextGame()
-                if found?.id != game?.id { live = nil; latest = nil; buffer = []; detector.reset() }
-                game = found
-            }
-            guard let game else { error = nil; return 1800 }
+        let abbrevs = teams.filter { $0.league == .nhl }.map(\.abbrev)
+        guard !abbrevs.isEmpty else { slots = []; return 1800 }
 
-            let secondsToStart = game.startTimeUTC.timeIntervalSinceNow
-            let gameWindow = game.isLive || (secondsToStart < 15 * 60 && !game.isFinished)
-                || latest.map({ GameState.isLive($0.gameState) }) == true
-            if gameWindow || latest == nil {
-                let pbp = try await client.playByPlay(gameID: game.id)
-                latest = pbp
-                buffer.append((Date(), pbp))
-                if GameState.isLive(pbp.gameState), !game.isLive {
-                    self.game = try await client.currentOrNextGame() ?? game
+        var failed = false
+        // Find each team's current or next game. A game between two followed teams appears once.
+        var next: [GameSlot] = []
+        for team in abbrevs {
+            let existing = slots.first { $0.team == team }
+            var game = existing?.game
+            if existing == nil || existing?.inWindow == false {
+                do { game = try await client.currentOrNextGame(team: team) } catch { failed = true }
+            }
+            guard let game, !next.contains(where: { $0.id == game.id }) else { continue }
+            let slot = slots.first { $0.id == game.id } ?? GameSlot(team: team, game: game)
+            slot.game = game
+            next.append(slot)
+        }
+
+        for slot in next where slot.inWindow || slot.latest == nil {
+            do {
+                let pbp = try await client.playByPlay(gameID: slot.id)
+                slot.latest = pbp
+                slot.buffer.append((Date(), pbp))
+                if GameState.isLive(pbp.gameState), !slot.game.isLive,
+                   let fresh = try await client.currentOrNextGame(team: slot.team), fresh.id == slot.id {
+                    slot.game = fresh
                 }
-            }
-            lastUpdate = Date()
-            error = nil
-        } catch {
-            self.error = (error as? URLError)?.code == .notConnectedToInternet ? "Offline" : "Can't reach NHL"
-            releaseDue()
-            return min(15, secondsToNextRelease ?? 15)
+            } catch { failed = true }
         }
 
-        releaseDue()
-        if let pbp = live, GameState.isFinished(pbp.gameState), buffer.isEmpty {
-            if runner.isRunning { runner.stop(); syncWidget() }
-            return 600
+        slots = next.sorted {
+            $0.widgetState(liveModeOn: false, spoilerDelay: 0).displayRank
+                < $1.widgetState(liveModeOn: false, spoilerDelay: 0).displayRank
         }
-        let inGame = game?.isLive == true || latest.map({ GameState.isLive($0.gameState) }) == true
-            || (game.map { $0.startTimeUTC.timeIntervalSinceNow < 15 * 60 && !$0.isFinished } ?? false)
-        if inGame || !buffer.isEmpty {
+        error = failed ? "Can't reach NHL" : nil
+        if !failed { lastUpdate = Date() }
+        releaseDue()
+
+        let active = slots.contains { $0.inWindow || !$0.buffer.isEmpty }
+        if runner.isRunning, !active, slots.contains(where: \.isDone) {
+            runner.stop()
+            syncWidget()
+        }
+        if failed { return min(15, secondsToNextRelease ?? 15) }
+        if active {
             let interval: Double = runner.isRunning || isActive ? 8 : 30
             return min(interval, secondsToNextRelease ?? interval)
         }
-        let secondsToStart = game?.startTimeUTC.timeIntervalSinceNow ?? 1800
-        return min(max(secondsToStart - 10 * 60, 60), 1800)
+        let soonest = slots.map { $0.game.startTimeUTC.timeIntervalSinceNow }.filter { $0 > 0 }.min() ?? 1800
+        return min(max(soonest - 10 * 60, 60), 1800)
     }
 
     /// Shows and announces every buffered snapshot that has waited out the spoiler delay.
     private func releaseDue() {
         let cutoff = Date().addingTimeInterval(-Double(spoilerDelay))
         var new: [GameEvent] = []
-        while let first = buffer.first, first.fetched <= cutoff {
-            buffer.removeFirst()
-            live = first.pbp
-            new += detector.ingest(first.pbp)
+        for slot in slots {
+            while let first = slot.buffer.first, first.fetched <= cutoff {
+                slot.buffer.removeFirst()
+                slot.live = first.pbp
+                new += slot.detector.ingest(first.pbp, us: slot.team)
+            }
         }
+        objectWillChange.send()
         handle(new)
         syncWidget()
     }
 
-    /// Shares the (delayed) game state with the Smart Stack widget and reloads it when something changed.
+    /// Shares the most relevant game with the Smart Stack widget and reloads it when something changed.
     func syncWidget() {
-        guard let game else { return }
-        let state = WidgetState(game: game, live: live, liveModeOn: runner.isRunning, spoilerDelay: spoilerDelay)
+        let states = slots.map { $0.widgetState(liveModeOn: runner.isRunning, spoilerDelay: spoilerDelay) }
+        guard let state = states.min(by: { $0.displayRank < $1.displayRank }) else { return }
         var previous = WidgetState.load()
         previous?.updated = state.updated
         state.save()
@@ -144,7 +208,8 @@ final class GameTracker: ObservableObject {
     }
 
     private var secondsToNextRelease: Double? {
-        buffer.first.map { max(1, $0.fetched.timeIntervalSinceNow + Double(spoilerDelay)) }
+        slots.compactMap { $0.buffer.first?.fetched }.min()
+            .map { max(1, $0.timeIntervalSinceNow + Double(spoilerDelay)) }
     }
 
     private func handle(_ new: [GameEvent]) {

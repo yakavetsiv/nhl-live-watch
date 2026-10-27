@@ -22,7 +22,7 @@ enum Haptics {
             // Four even taps.
             return [(.click, 0.3), (.click, 0.3), (.click, 0.3), (.click, 0)]
         case .leafsPenalty:
-            // Leafs short-handed: one quick double tap.
+            // Followed team short-handed: one quick double tap.
             return [(.directionDown, 0.18), (.directionDown, 0)]
         case .period:
             return event.periodEnd ? twoThenOne : [(.start, 0)]
